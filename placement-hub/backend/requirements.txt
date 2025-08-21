@@ -1,0 +1,35 @@
+# Backend Dependencies for Placement Hub
+
+# Django Framework
+Django==4.2.7
+djangorestframework==3.14.0
+
+# Database
+psycopg2-binary==2.9.7
+
+# CORS handling
+django-cors-headers==4.3.1
+
+# Environment variables
+python-dotenv==1.0.0
+
+# JWT handling for Supabase auth
+PyJWT==2.8.0
+
+# HTTP requests
+requests==2.31.0
+
+# Production server
+gunicorn==21.2.0
+
+# Static files handling
+whitenoise==6.6.0
+
+# Database URL parsing for production
+dj-database-url==2.1.0
+
+# Development tools
+django-extensions==3.2.3
+
+# API documentation (optional)
+drf-spectacular==0.26.5
