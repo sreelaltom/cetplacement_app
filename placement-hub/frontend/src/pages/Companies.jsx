@@ -41,8 +41,10 @@ const Companies = () => {
     const filtered = companies.filter(
       (company) =>
         company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (company.industry &&
-          company.industry.toLowerCase().includes(searchTerm.toLowerCase()))
+        (company.tier &&
+          company.tier.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (company.salary_range &&
+          company.salary_range.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredCompanies(filtered);
   }, [searchTerm, companies]);
@@ -789,7 +791,7 @@ const Companies = () => {
                         >
                           {company.name}
                         </h3>
-                        {company.industry && (
+                        {(company.tier || company.salary_range) && (
                           <p
                             style={{
                               margin: 0,
@@ -798,25 +800,41 @@ const Companies = () => {
                               fontWeight: theme.typography.fontWeight.medium,
                             }}
                           >
-                            {company.industry}
+                            {company.tier && company.salary_range
+                              ? `${company.tier
+                                  .replace("_", " ")
+                                  .replace(/\b\w/g, (l) =>
+                                    l.toUpperCase()
+                                  )} • ${company.salary_range}`
+                              : company.tier
+                                  ?.replace("_", " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase()) ||
+                                company.salary_range}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {company.description && (
-                      <p
+                    {company.website && (
+                      <div
                         style={{
-                          color: theme.colors.textSecondary,
-                          margin: `0 0 ${theme.spacing.lg} 0`,
-                          fontSize: theme.typography.fontSize.base,
-                          lineHeight: "1.6",
+                          marginBottom: theme.spacing.lg,
                         }}
                       >
-                        {company.description.length > 120
-                          ? `${company.description.substring(0, 120)}...`
-                          : company.description}
-                      </p>
+                        <a
+                          href={company.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: theme.colors.primary,
+                            textDecoration: "none",
+                            fontSize: theme.typography.fontSize.sm,
+                            fontWeight: theme.typography.fontWeight.medium,
+                          }}
+                        >
+                          🌐 Visit Website
+                        </a>
+                      </div>
                     )}
 
                     <div

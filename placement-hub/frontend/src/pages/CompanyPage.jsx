@@ -299,45 +299,57 @@ const CompanyPage = () => {
               >
                 {company.name}
               </h1>
-              {company.industry && (
-                <p
-                  style={{
-                    margin: `0 0 ${theme.spacing.sm} 0`,
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.fontSize.lg,
-                    fontWeight: theme.typography.fontWeight.medium,
-                  }}
-                >
-                  {company.industry}
-                </p>
-              )}
-              {company.salary_range && (
-                <p
-                  style={{
-                    margin: 0,
-                    color: theme.colors.success,
-                    fontSize: theme.typography.fontSize.base,
-                    fontWeight: theme.typography.fontWeight.semibold,
-                  }}
-                >
-                  💰 Salary Range: {company.salary_range}
-                </p>
+              {(company.tier || company.salary_range || company.website) && (
+                <div style={{ marginBottom: theme.spacing.md }}>
+                  {company.tier && (
+                    <p
+                      style={{
+                        margin: `0 0 ${theme.spacing.xs} 0`,
+                        color: theme.colors.textSecondary,
+                        fontSize: theme.typography.fontSize.lg,
+                        fontWeight: theme.typography.fontWeight.medium,
+                      }}
+                    >
+                      {company.tier
+                        .replace("_", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </p>
+                  )}
+                  {company.salary_range && (
+                    <p
+                      style={{
+                        margin: `0 0 ${theme.spacing.xs} 0`,
+                        color: theme.colors.success,
+                        fontSize: theme.typography.fontSize.base,
+                        fontWeight: theme.typography.fontWeight.semibold,
+                      }}
+                    >
+                      💰 {company.salary_range}
+                    </p>
+                  )}
+                  {company.website && (
+                    <a
+                      href={company.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: theme.colors.primary,
+                        textDecoration: "none",
+                        fontSize: theme.typography.fontSize.base,
+                        fontWeight: theme.typography.fontWeight.medium,
+                        display: "inline-block",
+                        marginTop: theme.spacing.xs,
+                      }}
+                    >
+                      🌐 Visit Website
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           </div>
 
-          {company.description && (
-            <p
-              style={{
-                color: theme.colors.text,
-                margin: `0 0 ${theme.spacing.lg} 0`,
-                fontSize: theme.typography.fontSize.base,
-                lineHeight: "1.6",
-              }}
-            >
-              {company.description}
-            </p>
-          )}
+          {/* Description removed as it's not in specified fields */}
 
           <div
             style={{
