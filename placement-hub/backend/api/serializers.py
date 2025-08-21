@@ -72,8 +72,8 @@ class CompanySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Company
-        fields = ['id', 'name']
-        read_only_fields = ['id']
+        fields = ['id', 'name', 'website', 'tier', 'created_at', 'salary_range']
+        read_only_fields = ['id', 'created_at']
 
 
 class InterviewExperienceSerializer(serializers.ModelSerializer):
