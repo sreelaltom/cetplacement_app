@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.http import JsonResponse
 from django.conf import settings
 import sys
+import os
 
 def simple_health_check(request):
     """Simple health check that doesn't require database"""
@@ -29,8 +30,20 @@ def simple_health_check(request):
         'python_version': sys.version
     })
 
+def db_debug(request):
+    """Debug database configuration"""
+    return JsonResponse({
+        'database_engine': settings.DATABASES['default']['ENGINE'],
+        'database_name': settings.DATABASES['default'].get('NAME', 'not set'),
+        'database_host': settings.DATABASES['default'].get('HOST', 'not set'),
+        'use_sqlite_env': os.environ.get('USE_SQLITE', 'not set'),
+        'database_url_env': 'set' if os.environ.get('DATABASE_URL') else 'not set',
+        'supabase_password_env': 'set' if os.environ.get('SUPABASE_DB_PASSWORD') else 'not set',
+    })
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('simple-health/', simple_health_check, name='simple_health'),
+    path('db-debug/', db_debug, name='db_debug'),
 ]
