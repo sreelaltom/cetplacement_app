@@ -12,7 +12,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # Add common production domains if ALLOWED_HOSTS is not properly set
 if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
-    ALLOWED_HOSTS = ['cetplacement-app.vercel.app', '.vercel.app', 'localhost', '127.0.0.1']  # Be more specific in actual production
+    ALLOWED_HOSTS = ['cetplacement-backend.vercel.app', '.vercel.app', 'localhost', '127.0.0.1']  # Fixed domain name
 
 # Fix admin redirect URLs in production
 USE_TZ = True
