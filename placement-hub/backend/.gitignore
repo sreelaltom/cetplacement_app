@@ -161,7 +161,7 @@ cython_debug/
 # Hosting and deployment specific
 .env.production
 .env.staging
-staticfiles/
+# staticfiles/  # Temporarily commented out to include static files for deployment
 media/uploads/
 *.sqlite3
 *.db
