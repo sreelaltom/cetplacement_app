@@ -23,6 +23,10 @@
   "env": {
     "DJANGO_SETTINGS_MODULE": "hub.settings",
     "DEBUG": "False",
-    "USE_SQLITE": "true"
+    "DATABASE_URL": "@supabase_database_url",
+    "SUPABASE_DB_PASSWORD": "@supabase_db_password",
+    "SUPABASE_DB_HOST": "@supabase_db_host",
+    "SUPABASE_DB_NAME": "@supabase_db_name",
+    "SUPABASE_DB_USER": "@supabase_db_user"
   }
 }
