@@ -29,8 +29,37 @@ def simple_health_check(request):
         'python_version': sys.version
     })
 
+def simple_companies_bypass(request):
+    """Simple companies endpoint bypassing DRF"""
+    try:
+        from api.models import Company
+        companies = Company.objects.all()
+        data = []
+        for c in companies:
+            data.append({
+                'id': c.id,
+                'name': c.name,
+                'tier': c.tier,
+                'website': c.website,
+                'salary_range': c.salary_range,
+                'created_at': str(c.created_at)
+            })
+        return JsonResponse({
+            'success': True,
+            'count': len(data),
+            'results': data
+        })
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }, status=500)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('simple-health/', simple_health_check, name='simple_health'),
+    path('bypass-companies/', simple_companies_bypass, name='bypass_companies'),
 ]
