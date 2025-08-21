@@ -263,15 +263,15 @@ export const AuthProvider = ({ children }) => {
     }
 
     console.log(
-      "updateProfile: Updating profile for user ID:",
-      userProfile.id,
+      "updateProfile: Updating profile for supabase_uid:",
+      userProfile.supabase_uid,
       "with data:",
       profileData
     );
     setLoading(true);
     try {
       const { data, error } = await apiService.updateUserProfile(
-        userProfile.id,
+        userProfile.supabase_uid,
         profileData
       );
       if (error) {
