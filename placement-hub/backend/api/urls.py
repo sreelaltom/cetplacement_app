@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 from .debug_views import debug_companies
 from .minimal_views import simple_company_list
+from .debug_schema import debug_company_schema
 
 # Simple view to bypass serializer
 from django.http import JsonResponse
@@ -43,6 +44,7 @@ router.register(r'experiences', views.InterviewExperienceViewSet)
 urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('debug/companies/', debug_companies, name='debug_companies'),
+    path('debug/schema/', debug_company_schema, name='debug_schema'),
     path('simple/companies/', simple_companies, name='simple_companies'),
     path('minimal/companies/', simple_company_list, name='minimal_companies'),
     path('', include(router.urls)),
