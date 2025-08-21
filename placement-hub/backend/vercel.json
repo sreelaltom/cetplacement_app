@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "hub/wsgi.py",
+      "src": "wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -13,7 +13,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "hub/wsgi.py"
+      "dest": "wsgi.py"
     }
   ],
   "env": {
@@ -24,7 +24,7 @@
     "ALLOWED_HOSTS": "cetplacement-backend.vercel.app,.vercel.app"
   },
   "functions": {
-    "hub/wsgi.py": {
+    "wsgi.py": {
       "maxDuration": 10
     }
   }
