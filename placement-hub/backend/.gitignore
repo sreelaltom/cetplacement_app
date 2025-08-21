@@ -186,3 +186,4 @@ backup_*
 # Keep Vercel configuration
 !vercel.json
 !build_files.sh
+sreelal
