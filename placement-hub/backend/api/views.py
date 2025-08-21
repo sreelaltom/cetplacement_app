@@ -20,6 +20,11 @@ from .models import (
     InterviewExperience, ExperienceVote
 )
 
+from .serializers import (
+    BranchSerializer, UserProfileSerializer, SubjectSerializer, PostSerializer, 
+    CompanySerializer, InterviewExperienceSerializer
+)
+
 
 class IsSupabaseAuthenticated(BasePermission):
     """
@@ -27,10 +32,6 @@ class IsSupabaseAuthenticated(BasePermission):
     """
     def has_permission(self, request, view):
         return hasattr(request, 'user') and request.user is not None
-from .serializers import (
-    BranchSerializer, UserProfileSerializer, SubjectSerializer, PostSerializer, 
-    CompanySerializer, InterviewExperienceSerializer
-)
 
 
 @api_view(['GET'])

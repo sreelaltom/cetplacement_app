@@ -36,8 +36,7 @@ router.register(r'branches', views.BranchViewSet)
 router.register(r'users', views.UserProfileViewSet)
 router.register(r'subjects', views.SubjectViewSet)
 router.register(r'posts', views.PostViewSet)
-# Temporarily disable companies viewset to isolate 500 error
-# router.register(r'companies', views.CompanyViewSet)
+router.register(r'companies', views.CompanyViewSet)
 router.register(r'experiences', views.InterviewExperienceViewSet)
 
 # The API URLs are now determined automatically by the router

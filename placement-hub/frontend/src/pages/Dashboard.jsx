@@ -852,8 +852,7 @@ const Dashboard = () => {
                           >
                             {company.name}
                           </h3>
-                          {(company.tier ||
-                            company.salary_range) && (
+                          {(company.tier || company.salary_range) && (
                             <p
                               style={{
                                 margin: 0,
