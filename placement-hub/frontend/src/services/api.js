@@ -172,18 +172,29 @@ const apiService = {
 
   async createUserProfile(profileData) {
     try {
+      console.log("API: Creating user profile with data:", profileData);
       const response = await apiClient.post("/users/", profileData);
+      console.log("API: User profile created successfully:", response.data);
       return { data: response.data, error: null };
     } catch (error) {
+      console.error("API: Error creating user profile:", error);
       return { data: null, error };
     }
   },
 
   async updateUserProfile(userId, data) {
     try {
+      console.log(
+        "API: Updating user profile for userId:",
+        userId,
+        "with data:",
+        data
+      );
       const response = await apiClient.patch(`/users/${userId}/`, data);
+      console.log("API: User profile updated successfully:", response.data);
       return { data: response.data, error: null };
     } catch (error) {
+      console.error("API: Error updating user profile:", error);
       return { data: null, error };
     }
   },

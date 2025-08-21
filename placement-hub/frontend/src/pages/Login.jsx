@@ -94,7 +94,9 @@ const Login = () => {
       } else if (mode === "magic") {
         result = await signInWithMagicLink(formData.email);
         if (!result.error) {
-          alert("Login link sent! Check your email to sign in.");
+          alert(
+            "Secure login link has been sent to your email address. Please check your inbox and click the link to access CET Placement Hub. The link will expire in 1 hour for security purposes."
+          );
           return;
         }
       }

@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [profileFetchCache, setProfileFetchCache] = useState(new Set());
 
   useEffect(() => {
     // Get initial session
@@ -85,7 +86,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserProfile = async (userId, sessionUser = null) => {
+    // Prevent duplicate fetch requests
+    if (profileFetchCache.has(userId)) {
+      console.log("Profile fetch already in progress for:", userId);
+      return;
+    }
+
     console.log("Fetching user profile for userId:", userId);
+    setProfileFetchCache((prev) => new Set([...prev, userId]));
+
     try {
       const { data, error } = await apiService.getUserProfile(userId);
       if (error) {
@@ -110,6 +119,13 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Error in fetchUserProfile:", error);
+    } finally {
+      // Remove from cache after fetch completes
+      setProfileFetchCache((prev) => {
+        const newCache = new Set(prev);
+        newCache.delete(userId);
+        return newCache;
+      });
     }
   };
 
@@ -128,14 +144,26 @@ export const AuthProvider = ({ children }) => {
       }
 
       const profileData = {
-        supabase_uid: userId, // Changed from user_id to supabase_uid
+        supabase_uid: userId,
         email: userToUse.email,
         full_name:
-          userToUse.user_metadata?.full_name || userToUse.email.split("@")[0],
+          userToUse.user_metadata?.full_name ||
+          userToUse.email.split("@")[0] ||
+          "New User",
         branch: "", // Will be set by user
         year: 1,
         points: 0,
       };
+
+      // Validate required fields
+      if (!profileData.email || !profileData.supabase_uid) {
+        console.error(
+          "Missing required fields for profile creation:",
+          profileData
+        );
+        return;
+      }
+
       console.log("Profile data to send:", profileData);
 
       const { data, error } = await apiService.createUserProfile(profileData);
@@ -229,18 +257,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = async (profileData) => {
-    if (!user || !userProfile) return { error: "No user logged in" };
+    if (!user || !userProfile) {
+      console.error("updateProfile: No user or userProfile available");
+      return { error: "No user logged in" };
+    }
 
+    console.log(
+      "updateProfile: Updating profile for user ID:",
+      userProfile.id,
+      "with data:",
+      profileData
+    );
     setLoading(true);
     try {
       const { data, error } = await apiService.updateUserProfile(
-        user.id,
+        userProfile.id,
         profileData
       );
       if (error) {
         console.error("Error updating profile:", error);
         return { error };
       } else {
+        console.log("Profile updated successfully:", data);
         setUserProfile(data);
         return { data, error: null };
       }

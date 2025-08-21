@@ -288,8 +288,8 @@ const Dashboard = () => {
       setShowBranchSelector(true);
     }
 
-    // Only fetch data if we have a userProfile
-    if (userProfile) {
+    // Only fetch data if we have a stable userProfile with an ID
+    if (userProfile?.id && !loading.overall) {
       // Call fetchDashboardData directly without dependency issues
       const loadData = async () => {
         console.log("Starting dashboard data fetch...");
@@ -320,7 +320,7 @@ const Dashboard = () => {
       });
       setErrors({});
     };
-  }, [userProfile]); // Only depend on userProfile
+  }, [userProfile?.id]); // Only depend on userProfile.id for stability
 
   // Memoized helper components for better performance
   const SectionLoader = useMemo(

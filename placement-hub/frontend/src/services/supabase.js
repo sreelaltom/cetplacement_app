@@ -167,11 +167,6 @@ export const authService = {
     }
   },
 
-  // Validate email domain
-  isValidEmail(email) {
-    return email && email.endsWith("@cet.ac.in");
-  },
-
   // Listen to auth changes
   onAuthStateChange(callback) {
     return supabase.auth.onAuthStateChange(callback);
