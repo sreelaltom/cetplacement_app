@@ -7,11 +7,12 @@
 # Each endpoint should return JSON responses.
 
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
 from django.utils import timezone
 from datetime import date
+from django.db import connection
 
 from .models import (
     Branch, UserProfile, Subject, Post, PostVote, Company,
@@ -21,6 +22,32 @@ from .serializers import (
     BranchSerializer, UserProfileSerializer, SubjectSerializer, PostSerializer, 
     CompanySerializer, InterviewExperienceSerializer
 )
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def health_check(request):
+    """Health check endpoint to verify API and database connectivity"""
+    try:
+        # Test database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        
+        # Test basic model query
+        user_count = UserProfile.objects.count()
+        company_count = Company.objects.count()
+        
+        return Response({
+            'status': 'healthy',
+            'database': 'connected',
+            'users': user_count,
+            'companies': company_count
+        })
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class BranchViewSet(viewsets.ModelViewSet):
@@ -43,6 +70,24 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # No authentication - return all profiles (Supabase handles auth on frontend)
         return UserProfile.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        """Get a specific user profile, with better error handling"""
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except UserProfile.DoesNotExist:
+            return Response({
+                'error': 'User profile not found',
+                'supabase_uid': kwargs.get('supabase_uid', 'unknown'),
+                'suggestion': 'User profile may need to be created first'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': 'Internal server error',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
     def me(self, request):

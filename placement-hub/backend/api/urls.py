@@ -13,5 +13,6 @@ router.register(r'experiences', views.InterviewExperienceViewSet)
 
 # The API URLs are now determined automatically by the router
 urlpatterns = [
+    path('health/', views.health_check, name='health_check'),
     path('', include(router.urls)),
 ]
