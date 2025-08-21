@@ -28,7 +28,11 @@ def create_initial_data():
             "Database Management Systems",    # ✅ SQL & theory asked a lot
             "Operating Systems",              # ✅ Frequently asked in interviews
             "Computer Networks",              # ✅ Core CS subject
-            "System Design"                   # ✅ For product companies / higher packages
+            "System Design",                  # ✅ For product companies / higher packages
+            "Web Development",                # ✅ MERN/Full-stack very useful
+            "App Development",                # ✅ Android/iOS basics
+            "Machine Learning & AI",          # ✅ ML basics + projects
+            "Cloud Computing & DevOps"       # ✅ For product companies / higher packages
         ],
 
         "Electronics and Communication Engineering": [

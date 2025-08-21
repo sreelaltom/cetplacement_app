@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "hub/wsgi.py",
+      "src": "db_test_wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -17,7 +17,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "hub/wsgi.py"
+      "dest": "db_test_wsgi.py"
     }
   ],
   "env": {
