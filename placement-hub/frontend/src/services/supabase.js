@@ -68,10 +68,14 @@ export const authService = {
         throw new Error("Only @cet.ac.in email addresses are allowed");
       }
 
+      const redirectUrl = import.meta.env.PROD
+        ? "https://cetplacement-app.vercel.app/dashboard"
+        : `${window.location.origin}/dashboard`;
+
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: redirectUrl,
         },
       });
 

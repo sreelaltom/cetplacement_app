@@ -92,9 +92,16 @@ export const AuthProvider = ({ children }) => {
         console.error("Error fetching user profile:", error);
         console.log("Error response status:", error.response?.status);
         console.log("Error status:", error.status);
-        // If profile doesn't exist, create one
-        if (error.response?.status === 404 || error.status === 404) {
-          console.log("404 detected, creating user profile...");
+        // If profile doesn't exist, create one (handle both 404 and 500 errors)
+        if (
+          error.response?.status === 404 ||
+          error.status === 404 ||
+          error.response?.status === 500 ||
+          error.status === 500
+        ) {
+          console.log(
+            "Profile not found or server error, creating user profile..."
+          );
           await createUserProfile(userId, sessionUser);
         }
       } else {

@@ -7,6 +7,70 @@ import PostCard from "../components/PostCard";
 const Profile = () => {
   console.log("Profile component is rendering!");
   const { user, userProfile, updateProfile, loading: authLoading } = useAuth();
+
+  // If user is authenticated but no profile, show onboarding
+  if (user && !userProfile && !authLoading) {
+    return (
+      <div
+        style={{
+          backgroundColor: theme.colors.background,
+          minHeight: "100vh",
+          padding: theme.spacing.md,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "600px",
+            backgroundColor: theme.colors.surface,
+            padding: theme.spacing.xl,
+            borderRadius: theme.borderRadius.lg,
+            boxShadow: theme.shadows.xl,
+            textAlign: "center",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: theme.typography.fontSize.xl,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text,
+              marginBottom: theme.spacing.lg,
+            }}
+          >
+            Welcome to CET Placement Hub! 🎓
+          </h2>
+          <p
+            style={{
+              fontSize: theme.typography.fontSize.md,
+              color: theme.colors.textSecondary,
+              marginBottom: theme.spacing.lg,
+            }}
+          >
+            We're setting up your profile. This may take a moment for new users.
+            Please refresh the page in a few seconds.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: theme.colors.primary,
+              color: theme.colors.textWhite,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+              borderRadius: theme.borderRadius.md,
+              border: "none",
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.medium,
+              cursor: "pointer",
+            }}
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const [formData, setFormData] = useState({
     full_name: "",
     branch: "",
