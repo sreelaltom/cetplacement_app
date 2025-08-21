@@ -7,6 +7,9 @@ import os
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+# Secret key with fallback for Vercel
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'placement-secret-key-fallback-for-vercel-deployment-2025')
+
 # SECURITY WARNING: define allowed hosts properly
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'cetplacement-backend.vercel.app,.vercel.app,localhost,127.0.0.1').split(',')
 
@@ -49,6 +52,18 @@ if 'DATABASE_URL' in os.environ:
     import dj_database_url
     DATABASES = {
         'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
+else:
+    # Fallback database configuration for Vercel
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'postgres',
+            'USER': 'postgres.byoqkhieazizoesflvms',
+            'PASSWORD': 'Sreelaltom@123',
+            'HOST': 'aws-1-us-east-2.pooler.supabase.com',
+            'PORT': '6543',
+        }
     }
 
 # Static files (CSS, JavaScript, Images) - Fixed for Vercel with WhiteNoise

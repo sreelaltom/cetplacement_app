@@ -1,10 +1,17 @@
 #!/bin/bash
 # Build script for Vercel deployment
 
-echo "Installing dependencies..."
+echo "Starting build process..."
+
+# Install dependencies
+echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
-echo "Collecting static files..."
-python manage.py collectstatic --noinput
+# Set environment variables
+export DJANGO_SETTINGS_MODULE=hub.production_settings
 
-echo "Build complete!"
+# Collect static files
+echo "Collecting static files..."
+python manage.py collectstatic --noinput --clear
+
+echo "Build completed successfully!"

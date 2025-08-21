@@ -29,6 +29,23 @@ def simple_health_check(request):
         'python_version': sys.version
     })
 
+def vercel_test(request):
+    """Simple test endpoint for Vercel deployment verification"""
+    try:
+        import os
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Django app is running on Vercel',
+            'python_version': sys.version,
+            'django_settings': os.environ.get('DJANGO_SETTINGS_MODULE', 'Not set'),
+            'environment': 'production' if not settings.DEBUG else 'development'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'error': str(e)
+        }, status=500)
+
 def simple_companies_bypass(request):
     """Simple companies endpoint bypassing DRF"""
     try:
@@ -64,6 +81,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('simple-health/', simple_health_check, name='simple_health'),
+    path('vercel-test/', vercel_test, name='vercel_test'),
     path('bypass-companies/', simple_companies_bypass, name='bypass_companies'),
     path('fix-schema/', fix_company_schema, name='fix_schema'),
 ]
