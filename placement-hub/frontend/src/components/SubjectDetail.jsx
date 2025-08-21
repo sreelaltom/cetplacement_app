@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import apiService from "../services/api";
+import PostCard from "./PostCard";
 
 const SubjectDetail = () => {
   const { subjectId } = useParams();
@@ -229,7 +230,7 @@ const SubjectDetail = () => {
   const handleVote = async (postId, voteType) => {
     try {
       if (!userProfile) {
-        alert("Please log in to vote on posts");
+        alert("Please log in to like posts");
         return;
       }
 
@@ -239,28 +240,24 @@ const SubjectDetail = () => {
 
       let vote;
 
-      // Implement toggle logic
+      // Only handle upvotes (likes) - remove downvote functionality
       if (voteType === "upvote") {
         if (currentUserVote === 1) {
-          // User already upvoted, remove the vote
+          // User already liked, remove the like
           vote = 0;
         } else {
-          // User hasn't upvoted or has downvoted, set to upvote
+          // User hasn't liked, set to like
           vote = 1;
         }
       } else {
-        // downvote
-        if (currentUserVote === -1) {
-          // User already downvoted, remove the vote
-          vote = 0;
-        } else {
-          // User hasn't downvoted or has upvoted, set to downvote
-          vote = -1;
-        }
+        // No downvote functionality - just return
+        return;
       }
 
       console.log(
-        `Voting ${voteType} (${vote}) on post ${postId}. Current vote: ${currentUserVote}`
+        `${
+          currentUserVote === 1 ? "Unliking" : "Liking"
+        } post ${postId}. Current vote: ${currentUserVote}`
       );
 
       const response = await apiService.voteOnPost(postId, vote);
@@ -270,16 +267,16 @@ const SubjectDetail = () => {
 
         // Handle authentication error specifically
         if (response.error.response?.status === 401) {
-          alert("Your session has expired. Please log in again to vote.");
+          alert("Your session has expired. Please log in again to like posts.");
           return;
         }
 
-        alert("Error voting on post. Please try again.");
+        alert("Error liking post. Please try again.");
         return;
       }
 
       if (response.data) {
-        console.log("Vote response:", response.data);
+        console.log("Like response:", response.data);
         // Update the post with the response data from server
         setPosts((prev) =>
           prev.map((post) => {
@@ -296,38 +293,8 @@ const SubjectDetail = () => {
         );
       }
     } catch (error) {
-      console.error("Error voting on post:", error);
-      alert("Error voting on post. Please try again.");
-    }
-  };
-
-  const getPostTypeIcon = (type) => {
-    switch (type) {
-      case "question":
-        return "❓";
-      case "notes":
-        return "📝";
-      case "tip":
-        return "💡";
-      case "resource":
-        return "🔗";
-      default:
-        return "📄";
-    }
-  };
-
-  const getPostTypeColor = (type) => {
-    switch (type) {
-      case "question":
-        return "#3b82f6";
-      case "notes":
-        return "#10b981";
-      case "tip":
-        return "#f59e0b";
-      case "resource":
-        return "#8b5cf6";
-      default:
-        return "#6b7280";
+      console.error("Error liking post:", error);
+      alert("Error liking post. Please try again.");
     }
   };
 
@@ -808,222 +775,13 @@ const SubjectDetail = () => {
             </div>
           ) : (
             posts.map((post) => (
-              <div
+              <PostCard
                 key={post.id}
-                style={{
-                  backgroundColor: "#1e1e1e",
-                  borderRadius: "1rem",
-                  padding: "1.5rem",
-                  border: "1px solid #333",
-                  transition: "border-color 0.2s",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "1rem",
-                  }}
-                >
-                  {/* Voting Section */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      minWidth: "60px",
-                    }}
-                  >
-                    <button
-                      onClick={() => handleVote(post.id, "upvote")}
-                      style={{
-                        backgroundColor:
-                          post.user_vote === 1 ? "#10b981" : "transparent",
-                        border: "1px solid #404040",
-                        color: post.user_vote === 1 ? "#ffffff" : "#10b981",
-                        borderRadius: "0.5rem",
-                        padding: "0.5rem",
-                        cursor: "pointer",
-                        fontSize: "1.2rem",
-                        width: "40px",
-                        height: "40px",
-                        borderColor:
-                          post.user_vote === 1 ? "#10b981" : "#404040",
-                      }}
-                    >
-                      ▲
-                    </button>
-
-                    <span
-                      style={{
-                        color: "#e0e0e0",
-                        fontWeight: "bold",
-                        fontSize: "1.1rem",
-                      }}
-                    >
-                      {(post.upvotes || 0) - (post.downvotes || 0)}
-                    </span>
-
-                    <button
-                      onClick={() => handleVote(post.id, "downvote")}
-                      style={{
-                        backgroundColor:
-                          post.user_vote === -1 ? "#ef4444" : "transparent",
-                        border: "1px solid #404040",
-                        color: post.user_vote === -1 ? "#ffffff" : "#ef4444",
-                        borderRadius: "0.5rem",
-                        padding: "0.5rem",
-                        cursor: "pointer",
-                        fontSize: "1.2rem",
-                        width: "40px",
-                        height: "40px",
-                        borderColor:
-                          post.user_vote === -1 ? "#ef4444" : "#404040",
-                      }}
-                    >
-                      ▼
-                    </button>
-                  </div>
-
-                  {/* Content Section */}
-                  <div style={{ flex: 1 }}>
-                    {/* Header */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "1rem",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <span
-                        style={{
-                          backgroundColor: getPostTypeColor(post.post_type),
-                          color: "white",
-                          padding: "0.25rem 0.75rem",
-                          borderRadius: "1rem",
-                          fontSize: "0.8rem",
-                          fontWeight: "500",
-                        }}
-                      >
-                        {getPostTypeIcon(post.post_type)}{" "}
-                        {post.post_type || "question"}
-                      </span>
-
-                      <span style={{ color: "#a0a0a0", fontSize: "0.85rem" }}>
-                        by {post.posted_by_name || "Anonymous"} •{" "}
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <h4
-                      style={{
-                        color: "white",
-                        fontSize: "1.3rem",
-                        fontWeight: "600",
-                        margin: "0 0 1rem 0",
-                        lineHeight: "1.4",
-                      }}
-                    >
-                      {post.topic}
-                    </h4>
-
-                    {/* Focus Points */}
-                    {post.focus_points && (
-                      <p
-                        style={{
-                          color: "#e0e0e0",
-                          lineHeight: "1.6",
-                          margin: "0 0 1rem 0",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        <strong style={{ color: "#10b981" }}>
-                          Focus Points:
-                        </strong>
-                        <br />
-                        {post.focus_points}
-                      </p>
-                    )}
-
-                    {/* Links */}
-                    {(post.notes_link || post.video_link) && (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "1rem",
-                          marginBottom: "1rem",
-                        }}
-                      >
-                        {post.notes_link && (
-                          <a
-                            href={post.notes_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              color: "#667eea",
-                              textDecoration: "none",
-                              fontSize: "0.9rem",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                            }}
-                          >
-                            📄 Notes/Documents
-                          </a>
-                        )}
-
-                        {post.video_link && (
-                          <a
-                            href={post.video_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              color: "#ef4444",
-                              textDecoration: "none",
-                              fontSize: "0.9rem",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                            }}
-                          >
-                            🎥 Video
-                          </a>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Focus Points */}
-                    {post.focus_points && (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "0.5rem",
-                          marginTop: "1rem",
-                        }}
-                      >
-                        {post.focus_points.split(",").map((point, index) => (
-                          <span
-                            key={index}
-                            style={{
-                              backgroundColor: "#2a2a2a",
-                              color: "#a0a0a0",
-                              padding: "0.25rem 0.75rem",
-                              borderRadius: "1rem",
-                              fontSize: "0.8rem",
-                              border: "1px solid #404040",
-                            }}
-                          >
-                            {point.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+                post={post}
+                showVoting={true}
+                onVote={handleVote}
+                userProfile={userProfile}
+              />
             ))
           )}
         </div>

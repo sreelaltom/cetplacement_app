@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { theme } from "../styles/theme";
+import apiService from "../services/api";
+import PostCard from "../components/PostCard";
 
 const Profile = () => {
+  console.log("Profile component is rendering!");
   const { user, userProfile, updateProfile, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     full_name: "",
@@ -15,6 +18,9 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [userPosts, setUserPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile"); // "profile" or "posts"
 
   const branches = [
     "Computer Science Engineering",
@@ -27,8 +33,36 @@ const Profile = () => {
     "Other",
   ];
 
+  const fetchUserPosts = async () => {
+    if (!userProfile?.id) {
+      console.log("No userProfile.id available:", userProfile);
+      return;
+    }
+
+    console.log("Fetching posts for user ID:", userProfile.id);
+    setPostsLoading(true);
+    try {
+      const response = await apiService.getPosts({ user: userProfile.id });
+      console.log("Posts API response:", response);
+      if (response.data) {
+        const posts = response.data.results || response.data;
+        console.log("Setting user posts:", posts);
+        setUserPosts(posts);
+      }
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
   useEffect(() => {
+    console.log("Profile useEffect triggered, userProfile:", userProfile);
     if (userProfile) {
+      console.log(
+        "Setting form data and fetching posts for userProfile:",
+        userProfile
+      );
       setFormData({
         full_name: userProfile.full_name || "",
         branch: userProfile.branch || "",
@@ -38,8 +72,50 @@ const Profile = () => {
         linkedin_url: userProfile.linkedin_url || "",
         github_url: userProfile.github_url || "",
       });
+
+      // Fetch user posts
+      fetchUserPosts();
+    } else {
+      console.log("No userProfile available yet");
     }
   }, [userProfile]);
+
+  const handleDeletePost = async (postId) => {
+    console.log("Attempting to delete post:", postId);
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    try {
+      console.log("Calling deletePost API for postId:", postId);
+      const response = await apiService.deletePost(postId);
+      console.log("Delete response:", response);
+
+      if (response.error) {
+        console.error("Delete failed with error:", response.error);
+        setMessage({
+          type: "error",
+          text: "Failed to delete post. Please try again.",
+        });
+      } else {
+        console.log("Delete successful, removing from state");
+        // Remove post from local state
+        setUserPosts((prev) => prev.filter((post) => post.id !== postId));
+        setMessage({
+          type: "success",
+          text: "Post deleted successfully!",
+        });
+        // Clear message after 3 seconds
+        setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      setMessage({
+        type: "error",
+        text: "An error occurred while deleting the post.",
+      });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,14 +176,14 @@ const Profile = () => {
               borderTop: `4px solid ${theme.colors.primary}`,
               borderRadius: "50%",
               animation: "spin 1s linear infinite",
-              margin: `0 auto ${theme.spacing.lg}`,
+              margin: "0 auto",
             }}
-          ></div>
+          />
           <p
             style={{
+              marginTop: theme.spacing.md,
               color: theme.colors.textSecondary,
               fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.medium,
             }}
           >
             Loading your profile...
@@ -130,9 +206,6 @@ const Profile = () => {
           maxWidth: "900px",
           margin: "0 auto",
           padding: theme.spacing.xl,
-          [`@media (max-width: ${theme.breakpoints.tablet})`]: {
-            padding: theme.spacing.md,
-          },
         }}
       >
         {/* Profile Header Card */}
@@ -181,10 +254,7 @@ const Profile = () => {
             {/* Profile Info */}
             <h1
               style={{
-                fontSize:
-                  window.innerWidth < 768
-                    ? theme.typography.fontSize["2xl"]
-                    : theme.typography.fontSize["3xl"],
+                fontSize: theme.typography.fontSize["3xl"],
                 fontWeight: theme.typography.fontWeight.bold,
                 margin: `0 0 ${theme.spacing.sm} 0`,
                 lineHeight: theme.typography.lineHeight.tight,
@@ -200,137 +270,97 @@ const Profile = () => {
                 fontWeight: theme.typography.fontWeight.medium,
               }}
             >
-              {user?.email}
+              {userProfile?.branch} • {userProfile?.year}th Year
             </p>
-            {userProfile?.branch && (
-              <div
-                style={{
-                  marginTop: theme.spacing.lg,
-                  padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                  backgroundColor: "rgba(255,255,255,0.15)",
-                  borderRadius: theme.borderRadius.full,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: theme.spacing.sm,
-                  fontSize: theme.typography.fontSize.base,
-                  fontWeight: theme.typography.fontWeight.medium,
-                  border: "2px solid rgba(255,255,255,0.2)",
-                }}
-              >
-                📚 {userProfile.branch} - Year {userProfile.year} | ⭐{" "}
-                {userProfile.points || 0} points
-              </div>
-            )}
           </div>
+        </div>
 
-          {/* Profile Stats */}
-          <div
+        {/* Tab Navigation */}
+        <div
+          style={{
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.xl,
+            boxShadow: theme.shadows.lg,
+            marginBottom: theme.spacing.lg,
+            border: `1px solid ${theme.colors.border}`,
+            padding: theme.spacing.sm,
+            display: "flex",
+            gap: theme.spacing.sm,
+          }}
+        >
+          <button
+            onClick={() => setActiveTab("profile")}
             style={{
-              padding: theme.spacing.xl,
-              borderBottom: `1px solid ${theme.colors.border}`,
-              backgroundColor: theme.colors.surface,
+              flex: 1,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+              borderRadius: theme.borderRadius.lg,
+              border: "none",
+              backgroundColor:
+                activeTab === "profile" ? theme.colors.primary : "transparent",
+              color:
+                activeTab === "profile"
+                  ? theme.colors.textWhite
+                  : theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.medium,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
             }}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  window.innerWidth < 768
-                    ? "1fr"
-                    : "repeat(auto-fit, minmax(180px, 1fr))",
-                gap: theme.spacing.lg,
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  padding: theme.spacing.md,
-                  backgroundColor: theme.colors.background,
-                  borderRadius: theme.borderRadius.lg,
-                  border: `2px solid ${theme.colors.border}`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: theme.typography.fontSize["2xl"],
-                    fontWeight: theme.typography.fontWeight.bold,
-                    color: theme.colors.primary,
-                    marginBottom: theme.spacing.sm,
-                  }}
-                >
-                  ⭐ {userProfile?.points || 0}
-                </div>
-                <div
-                  style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.fontSize.sm,
-                    fontWeight: theme.typography.fontWeight.medium,
-                  }}
-                >
-                  Points Earned
-                </div>
-              </div>
+            👤 Profile Info
+          </button>
+          <button
+            onClick={() => setActiveTab("posts")}
+            style={{
+              flex: 1,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+              borderRadius: theme.borderRadius.lg,
+              border: "none",
+              backgroundColor:
+                activeTab === "posts" ? theme.colors.primary : "transparent",
+              color:
+                activeTab === "posts"
+                  ? theme.colors.textWhite
+                  : theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.medium,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            📝 My Posts ({userPosts.length})
+          </button>
+        </div>
 
-              <div
-                style={{
-                  padding: theme.spacing.md,
-                  backgroundColor: theme.colors.background,
-                  borderRadius: theme.borderRadius.lg,
-                  border: `2px solid ${theme.colors.border}`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: theme.typography.fontSize["2xl"],
-                    fontWeight: theme.typography.fontWeight.bold,
-                    color: theme.colors.accent,
-                    marginBottom: theme.spacing.sm,
-                  }}
-                >
-                  📝 {userProfile?.posts_count || 0}
-                </div>
-                <div
-                  style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.fontSize.sm,
-                    fontWeight: theme.typography.fontWeight.medium,
-                  }}
-                >
-                  Posts Shared
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: theme.spacing.md,
-                  backgroundColor: theme.colors.background,
-                  borderRadius: theme.borderRadius.lg,
-                  border: `2px solid ${theme.colors.border}`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: theme.typography.fontSize["2xl"],
-                    fontWeight: theme.typography.fontWeight.bold,
-                    color: theme.colors.secondary,
-                  }}
-                >
-                  💼 {userProfile?.experiences_count || 0}
-                </div>
-                <div
-                  style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.fontSize.sm,
-                    fontWeight: theme.typography.fontWeight.medium,
-                  }}
-                >
-                  Experiences
-                </div>
-              </div>
-            </div>
+        {/* Message Display */}
+        {message.text && (
+          <div
+            style={{
+              padding: theme.spacing.lg,
+              borderRadius: theme.borderRadius.md,
+              marginBottom: theme.spacing.xl,
+              backgroundColor:
+                message.type === "success"
+                  ? theme.colors.accentLight
+                  : "rgba(239, 68, 68, 0.1)",
+              color:
+                message.type === "success"
+                  ? theme.colors.accent
+                  : theme.colors.error,
+              border: `2px solid ${
+                message.type === "success"
+                  ? theme.colors.accent
+                  : theme.colors.error
+              }`,
+              fontWeight: theme.typography.fontWeight.medium,
+            }}
+          >
+            {message.text}
           </div>
+        )}
 
-          {/* Edit Profile Form */}
+        {/* Profile Form */}
+        {activeTab === "profile" && (
           <div
             style={{
               backgroundColor: theme.colors.surface,
@@ -361,10 +391,7 @@ const Profile = () => {
               </div>
               <h2
                 style={{
-                  fontSize:
-                    window.innerWidth < 768
-                      ? theme.typography.fontSize.xl
-                      : theme.typography.fontSize["2xl"],
+                  fontSize: theme.typography.fontSize["2xl"],
                   fontWeight: theme.typography.fontWeight.bold,
                   color: theme.colors.text,
                   margin: 0,
@@ -373,32 +400,6 @@ const Profile = () => {
                 Edit Profile
               </h2>
             </div>
-
-            {message.text && (
-              <div
-                style={{
-                  padding: theme.spacing.lg,
-                  borderRadius: theme.borderRadius.md,
-                  marginBottom: theme.spacing.xl,
-                  backgroundColor:
-                    message.type === "success"
-                      ? theme.colors.accentLight
-                      : "rgba(239, 68, 68, 0.1)",
-                  color:
-                    message.type === "success"
-                      ? theme.colors.accent
-                      : theme.colors.error,
-                  border: `2px solid ${
-                    message.type === "success"
-                      ? theme.colors.accent
-                      : theme.colors.error
-                  }`,
-                  fontWeight: theme.typography.fontWeight.medium,
-                }}
-              >
-                {message.text}
-              </div>
-            )}
 
             <form
               onSubmit={handleSubmit}
@@ -424,25 +425,15 @@ const Profile = () => {
                   onChange={handleChange}
                   required
                   style={{
-                    ...(theme.commonStyles?.input || {
-                      width: "100%",
-                      padding: theme.spacing.md,
-                      border: `2px solid ${theme.colors.border}`,
-                      borderRadius: theme.borderRadius.md,
-                      fontSize: theme.typography.fontSize.base,
-                      backgroundColor: theme.colors.background,
-                      color: theme.colors.text,
-                      boxSizing: "border-box",
-                      transition: theme.transitions.normal,
-                    }),
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = theme.colors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = theme.colors.border;
-                    e.target.style.boxShadow = "none";
+                    width: "100%",
+                    padding: theme.spacing.md,
+                    border: `2px solid ${theme.colors.border}`,
+                    borderRadius: theme.borderRadius.md,
+                    fontSize: theme.typography.fontSize.base,
+                    backgroundColor: theme.colors.background,
+                    color: theme.colors.text,
+                    boxSizing: "border-box",
+                    transition: theme.transitions.normal,
                   }}
                 />
               </div>
@@ -451,8 +442,7 @@ const Profile = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns:
-                    window.innerWidth < 768 ? "1fr" : "2fr 1fr",
+                  gridTemplateColumns: "2fr 1fr",
                   gap: theme.spacing.lg,
                 }}
               >
@@ -483,14 +473,6 @@ const Profile = () => {
                       color: theme.colors.text,
                       boxSizing: "border-box",
                       transition: theme.transitions.normal,
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = theme.colors.primary;
-                      e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = theme.colors.border;
-                      e.target.style.boxShadow = "none";
                     }}
                   >
                     <option value="">Select Branch</option>
@@ -528,14 +510,6 @@ const Profile = () => {
                       color: theme.colors.text,
                       boxSizing: "border-box",
                       transition: theme.transitions.normal,
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = theme.colors.primary;
-                      e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = theme.colors.border;
-                      e.target.style.boxShadow = "none";
                     }}
                   >
                     <option value={1}>1st Year</option>
@@ -578,14 +552,6 @@ const Profile = () => {
                     transition: theme.transitions.normal,
                     fontFamily: "inherit",
                   }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = theme.colors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = theme.colors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
                 />
               </div>
 
@@ -619,14 +585,6 @@ const Profile = () => {
                     boxSizing: "border-box",
                     transition: theme.transitions.normal,
                   }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = theme.colors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = theme.colors.border;
-                    e.target.style.boxShadow = "none";
-                  }}
                 />
               </div>
 
@@ -634,8 +592,7 @@ const Profile = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns:
-                    window.innerWidth < 768 ? "1fr" : "1fr 1fr",
+                  gridTemplateColumns: "1fr 1fr",
                   gap: theme.spacing.lg,
                 }}
               >
@@ -667,14 +624,6 @@ const Profile = () => {
                       color: theme.colors.text,
                       boxSizing: "border-box",
                       transition: theme.transitions.normal,
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = theme.colors.primary;
-                      e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = theme.colors.border;
-                      e.target.style.boxShadow = "none";
                     }}
                   />
                 </div>
@@ -708,14 +657,6 @@ const Profile = () => {
                       boxSizing: "border-box",
                       transition: theme.transitions.normal,
                     }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = theme.colors.primary;
-                      e.target.style.boxShadow = `0 0 0 3px ${theme.colors.primaryLight}`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = theme.colors.border;
-                      e.target.style.boxShadow = "none";
-                    }}
                   />
                 </div>
               </div>
@@ -725,37 +666,161 @@ const Profile = () => {
                 type="submit"
                 disabled={loading}
                 style={{
-                  ...(theme.commonStyles?.button?.primary || {
-                    backgroundColor: theme.colors.primary,
-                    color: theme.colors.textWhite,
-                    padding: `${theme.spacing.lg} ${theme.spacing.xl}`,
-                    border: "none",
-                    borderRadius: theme.borderRadius.md,
-                    fontSize: theme.typography.fontSize.base,
-                    fontWeight: theme.typography.fontWeight.semibold,
-                    cursor: loading ? "not-allowed" : "pointer",
-                    transition: theme.transitions.normal,
-                  }),
+                  backgroundColor: theme.colors.primary,
+                  color: theme.colors.textWhite,
+                  padding: `${theme.spacing.lg} ${theme.spacing.xl}`,
+                  border: "none",
+                  borderRadius: theme.borderRadius.md,
+                  fontSize: theme.typography.fontSize.base,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  transition: theme.transitions.normal,
                   opacity: loading ? 0.5 : 1,
                   justifySelf: "start",
                   display: "flex",
                   alignItems: "center",
                   gap: theme.spacing.sm,
                 }}
-                onMouseEnter={(e) => {
-                  if (!loading)
-                    e.target.style.backgroundColor = theme.colors.primaryHover;
-                }}
-                onMouseLeave={(e) => {
-                  if (!loading)
-                    e.target.style.backgroundColor = theme.colors.primary;
-                }}
               >
                 {loading ? "⏳ Updating..." : "💾 Update Profile"}
               </button>
             </form>
           </div>
-        </div>
+        )}
+
+        {/* Posts Section */}
+        {activeTab === "posts" && (
+          <div
+            style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.borderRadius.xl,
+              boxShadow: theme.shadows.lg,
+              border: `1px solid ${theme.colors.border}`,
+              overflow: "hidden",
+            }}
+          >
+            {/* Posts Header */}
+            <div
+              style={{
+                padding: theme.spacing.xl,
+                borderBottom: `1px solid ${theme.colors.border}`,
+                background: `linear-gradient(135deg, ${theme.colors.primary}15 0%, ${theme.colors.primaryHover}10 100%)`,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: theme.typography.fontSize.xl,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.textPrimary,
+                  margin: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: theme.spacing.sm,
+                }}
+              >
+                📝 My Posts
+                <span
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    color: theme.colors.textWhite,
+                    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                    borderRadius: theme.borderRadius.full,
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.medium,
+                  }}
+                >
+                  {userPosts.length}
+                </span>
+              </h3>
+            </div>
+
+            {/* Posts Content */}
+            <div style={{ padding: theme.spacing.xl }}>
+              {console.log(
+                "Rendering posts section. postsLoading:",
+                postsLoading,
+                "userPosts.length:",
+                userPosts.length,
+                "userPosts:",
+                userPosts
+              )}
+              {postsLoading ? (
+                <div style={{ textAlign: "center", padding: theme.spacing.xl }}>
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      border: `4px solid ${theme.colors.border}`,
+                      borderTop: `4px solid ${theme.colors.primary}`,
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                      margin: "0 auto",
+                    }}
+                  />
+                  <p
+                    style={{
+                      marginTop: theme.spacing.md,
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.typography.fontSize.md,
+                    }}
+                  >
+                    Loading your posts...
+                  </p>
+                </div>
+              ) : userPosts.length === 0 ? (
+                <div style={{ textAlign: "center", padding: theme.spacing.xl }}>
+                  <div
+                    style={{
+                      fontSize: "4rem",
+                      marginBottom: theme.spacing.md,
+                    }}
+                  >
+                    📝
+                  </div>
+                  <h4
+                    style={{
+                      fontSize: theme.typography.fontSize.lg,
+                      fontWeight: theme.typography.fontWeight.semibold,
+                      color: theme.colors.textPrimary,
+                      margin: `0 0 ${theme.spacing.sm} 0`,
+                    }}
+                  >
+                    No Posts Yet
+                  </h4>
+                  <p
+                    style={{
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.typography.fontSize.md,
+                      margin: 0,
+                    }}
+                  >
+                    You haven't created any posts yet. Start sharing your
+                    knowledge!
+                  </p>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: theme.spacing.lg,
+                  }}
+                >
+                  {userPosts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      showVoting={false}
+                      showDelete={true}
+                      onDelete={handleDeletePost}
+                      userProfile={userProfile}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <style>

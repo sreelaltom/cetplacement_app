@@ -22,20 +22,44 @@ apiClient.interceptors.request.use(
   async (config) => {
     try {
       console.log("API: Making request to:", config.url);
-      // Temporarily disable auth to debug the hanging issue
-      console.log("API call (auth temporarily disabled):", config.url);
 
-      // // Get the current session from Supabase
-      // const { session, error } = await authService.getCurrentSession();
+      // Only add auth for specific authenticated endpoints/actions
+      const authRequiredEndpoints = ["/users/me"];
 
-      // if (session?.access_token && !error) {
-      //   // Add the JWT token to the Authorization header
-      //   config.headers.Authorization = `Bearer ${session.access_token}`;
-      //   console.log("API call with auth:", config.url);
-      // } else {
-      //   console.log("API call (no auth):", config.url);
-      //   console.log("Session error:", error);
-      // }
+      // Check if this is a writing operation (POST, PUT, PATCH, DELETE)
+      const isWriteOperation = ["post", "put", "patch", "delete"].includes(
+        config.method?.toLowerCase()
+      );
+
+      // Check if this is a voting endpoint
+      const isVoteEndpoint = config.url?.includes("/vote/");
+
+      // Auth is required for:
+      // 1. Specific authenticated endpoints (like /users/me)
+      // 2. Any voting endpoints
+      // 3. Write operations (creating/updating posts, experiences, etc.)
+      const requiresAuth =
+        authRequiredEndpoints.some((endpoint) =>
+          config.url?.includes(endpoint)
+        ) ||
+        isVoteEndpoint ||
+        isWriteOperation;
+
+      if (requiresAuth) {
+        // Get the current session from Supabase
+        const { session, error } = await authService.getCurrentSession();
+
+        if (session?.access_token && !error) {
+          // Add the JWT token to the Authorization header
+          config.headers.Authorization = `Bearer ${session.access_token}`;
+          console.log("API call with auth:", config.url);
+        } else {
+          console.log("API call (auth required but no session):", config.url);
+          console.log("Session error:", error);
+        }
+      } else {
+        console.log("API call (no auth required):", config.url);
+      }
     } catch (error) {
       console.warn("Failed to get auth token:", error);
     }
@@ -51,13 +75,43 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error("API Error:", error.response?.data || error.message);
+
     if (error.response?.status === 401) {
-      // Only redirect to login for non-API requests or critical auth failures
-      // For voting and other user actions, let the component handle the error
       const url = error.config?.url || "";
-      if (!url.includes("/vote/") && !url.includes("/posts/")) {
-        // Handle unauthorized access - redirect to login
-        window.location.href = "/login";
+      const method = error.config?.method?.toLowerCase() || "";
+
+      // Check if this endpoint actually requires authentication
+      const authRequiredEndpoints = ["/users/me"];
+      const isWriteOperation = ["post", "put", "patch", "delete"].includes(
+        method
+      );
+      const isVoteEndpoint = url.includes("/vote/");
+
+      const shouldRequireAuth =
+        authRequiredEndpoints.some((endpoint) => url.includes(endpoint)) ||
+        isVoteEndpoint ||
+        isWriteOperation;
+
+      if (shouldRequireAuth) {
+        console.log("Authentication required for protected endpoint");
+
+        // For voting, let the component handle the error with custom message
+        if (isVoteEndpoint) {
+          // Don't redirect for voting - let the component show session expired message
+          console.log("Voting authentication error - component will handle");
+        } else if (!window.location.pathname.includes("/login")) {
+          // For other auth-required endpoints, redirect to login
+          console.log("Redirecting to login for authenticated endpoint");
+          sessionStorage.setItem(
+            "redirectAfterLogin",
+            window.location.pathname
+          );
+          window.location.href = "/login";
+        }
+      } else {
+        console.log("401 error on endpoint that should be public:", url);
+        // This suggests a backend configuration issue
       }
     }
     return Promise.reject(error);
@@ -132,11 +186,6 @@ const apiService = {
     } catch (error) {
       return { data: null, error };
     }
-  },
-
-  async getLeaderboard() {
-    const response = await apiClient.get("/users/leaderboard/");
-    return response.data;
   },
 
   // Subject APIs

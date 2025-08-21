@@ -11,12 +11,12 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import ProfileSetup from "./components/ProfileSetup";
 import SubjectBrowser from "./components/SubjectBrowser";
 import SubjectDetail from "./components/SubjectDetail";
 import Companies from "./pages/Companies";
 import CompanyPage from "./pages/CompanyPage";
-import Leaderboard from "./pages/Leaderboard";
 import "./App.css";
 
 // Admin Redirect component
@@ -164,6 +164,15 @@ function App() {
               path="/profile"
               element={
                 <ProtectedRoute>
+                  <Navbar />
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile-setup"
+              element={
+                <ProtectedRoute>
                   <ProfileSetup />
                 </ProtectedRoute>
               }
@@ -205,15 +214,6 @@ function App() {
                 <ProtectedRoute>
                   <Navbar />
                   <SubjectDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/leaderboard"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <Leaderboard />
                 </ProtectedRoute>
               }
             />

@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import apiService from "../services/api";
 import { theme } from "../styles/theme";
+import PostCard from "../components/PostCard";
 
 const Dashboard = () => {
   console.log("Dashboard component mounted!");
@@ -217,9 +218,8 @@ const Dashboard = () => {
     () => ({
       companies: companies.length,
       posts: recentPosts.length,
-      points: userProfile?.points || 0,
     }),
-    [companies.length, recentPosts.length, userProfile?.points]
+    [companies.length, recentPosts.length]
   );
 
   // Individual fetch functions - memoized to prevent unnecessary recreations
@@ -539,8 +539,7 @@ const Dashboard = () => {
                     fontSize: theme.typography.fontSize.base,
                   }}
                 >
-                  📚 {userProfile.branch} - Year {userProfile.year} | ⭐ Points:{" "}
-                  {userProfile.points}
+                  📚 {userProfile.branch} - Year {userProfile.year}
                 </span>
               </div>
             )}
@@ -658,57 +657,6 @@ const Dashboard = () => {
                 }}
               >
                 Companies Listed
-              </p>
-            </div>
-
-            <div
-              style={{
-                ...(theme.commonStyles?.card || {
-                  backgroundColor: theme.colors.surface,
-                  padding: theme.spacing.xl,
-                  borderRadius: theme.borderRadius.lg,
-                  boxShadow: theme.shadows.md,
-                }),
-                textAlign: "center",
-                border: `2px solid ${theme.colors.border}`,
-                transition: theme.transitions.normal,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = theme.shadows.lg;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = theme.shadows.md;
-              }}
-            >
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize["3xl"],
-                  marginBottom: theme.spacing.md,
-                }}
-              >
-                🏆
-              </div>
-              <h3
-                style={{
-                  fontSize: theme.typography.fontSize["2xl"],
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.accent,
-                  margin: `0 0 ${theme.spacing.sm} 0`,
-                }}
-              >
-                {stats.points}
-              </h3>
-              <p
-                style={{
-                  color: theme.colors.textSecondary,
-                  margin: 0,
-                  fontSize: theme.typography.fontSize.base,
-                  fontWeight: theme.typography.fontWeight.medium,
-                }}
-              >
-                Your Points
               </p>
             </div>
           </div>
@@ -936,131 +884,7 @@ const Dashboard = () => {
             ) : recentPosts.length > 0 ? (
               <div style={gridStyles.posts}>
                 {recentPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    style={{
-                      backgroundColor: theme.colors.surface,
-                      padding: theme.spacing.xl,
-                      borderRadius: theme.borderRadius.lg,
-                      boxShadow: theme.shadows.md,
-                      border: `1px solid ${theme.colors.border}`,
-                      transition: theme.transitions.normal,
-                      cursor: "pointer",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = "translateY(-2px)";
-                      e.target.style.boxShadow = theme.shadows.lg;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = "translateY(0)";
-                      e.target.style.boxShadow = theme.shadows.md;
-                    }}
-                    onClick={() =>
-                      (window.location.href = `/subjects/${post.subject}`)
-                    }
-                  >
-                    {/* Header with post type and subject */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: theme.spacing.sm,
-                        marginBottom: theme.spacing.md,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <span
-                        style={{
-                          backgroundColor:
-                            post.post_type === "notes"
-                              ? "#3b82f6"
-                              : post.post_type === "video"
-                              ? "#ef4444"
-                              : post.post_type === "question"
-                              ? "#f59e0b"
-                              : "#10b981",
-                          color: "white",
-                          padding: "0.25rem 0.75rem",
-                          borderRadius: "1rem",
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.medium,
-                        }}
-                      >
-                        {post.post_type === "notes"
-                          ? "📄"
-                          : post.post_type === "video"
-                          ? "🎥"
-                          : post.post_type === "question"
-                          ? "❓"
-                          : "📝"}{" "}
-                        {post.post_type || "question"}
-                      </span>
-
-                      {post.subject_name && (
-                        <span
-                          style={{
-                            backgroundColor: theme.colors.primary + "20",
-                            color: theme.colors.primary,
-                            padding: "0.25rem 0.75rem",
-                            borderRadius: "1rem",
-                            fontSize: theme.typography.fontSize.xs,
-                            fontWeight: theme.typography.fontWeight.medium,
-                            border: `1px solid ${theme.colors.primary}40`,
-                          }}
-                        >
-                          📚 {post.subject_name}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <h3
-                      style={{
-                        fontSize: theme.typography.fontSize.lg,
-                        fontWeight: theme.typography.fontWeight.bold,
-                        color: theme.colors.text,
-                        margin: `0 0 ${theme.spacing.sm} 0`,
-                        lineHeight: theme.typography.lineHeight.tight,
-                      }}
-                    >
-                      {post.topic || post.title || "Untitled Post"}
-                    </h3>
-
-                    {/* Focus Points */}
-                    <p
-                      style={{
-                        color: theme.colors.textSecondary,
-                        lineHeight: theme.typography.lineHeight.relaxed,
-                        margin: `0 0 ${theme.spacing.lg} 0`,
-                        fontSize: theme.typography.fontSize.base,
-                      }}
-                    >
-                      {post.focus_points
-                        ? post.focus_points.length > 150
-                          ? post.focus_points.substring(0, 150) + "..."
-                          : post.focus_points
-                        : "No focus points available"}
-                    </p>
-
-                    {/* Footer with author and date */}
-                    <div
-                      style={{
-                        fontSize: theme.typography.fontSize.sm,
-                        color: theme.colors.textSecondary,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        borderTop: `1px solid ${theme.colors.border}`,
-                        paddingTop: theme.spacing.md,
-                        marginTop: theme.spacing.md,
-                      }}
-                    >
-                      <span>👤 {post.posted_by_name || "Anonymous"}</span>
-                      <span>
-                        🕒 {new Date(post.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
+                  <PostCard key={post.id} post={post} showVoting={false} />
                 ))}
               </div>
             ) : (

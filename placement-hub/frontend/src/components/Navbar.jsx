@@ -20,7 +20,6 @@ const Navbar = () => {
     { to: "/subject-browser", label: "📚 Subjects", icon: "📚" },
     { to: "/companies", label: "🏢 Companies", icon: "🏢" },
     { to: "/profile", label: "👤 Profile", icon: "👤" },
-    { to: "/leaderboard", label: "🏆 Leaderboard", icon: "🏆" },
   ];
 
   const NavLink = ({ to, children, onClick, isMobile = false }) => (

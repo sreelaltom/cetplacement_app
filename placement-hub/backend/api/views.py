@@ -9,6 +9,7 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import BasePermission
 from django.db.models import Q
 from django.utils import timezone
 from datetime import date
@@ -18,6 +19,14 @@ from .models import (
     Branch, UserProfile, Subject, Post, PostVote, Company,
     InterviewExperience, ExperienceVote
 )
+
+
+class IsSupabaseAuthenticated(BasePermission):
+    """
+    Custom permission to check if user is authenticated via Supabase
+    """
+    def has_permission(self, request, view):
+        return hasattr(request, 'user') and request.user is not None
 from .serializers import (
     BranchSerializer, UserProfileSerializer, SubjectSerializer, PostSerializer, 
     CompanySerializer, InterviewExperienceSerializer
@@ -94,13 +103,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         """Get current user's profile"""
         return Response({'error': 'Authentication handled by Supabase on frontend'}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
-    @action(detail=False, methods=['get'])
-    def leaderboard(self, request):
-        """Get leaderboard of top contributors"""
-        top_users = UserProfile.objects.order_by('-points')[:50]
-        serializer = self.get_serializer(top_users, many=True)
-        return Response(serializer.data)
-
 
 class SubjectViewSet(viewsets.ModelViewSet):
     """ViewSet for subjects"""
@@ -163,15 +165,28 @@ class PostViewSet(viewsets.ModelViewSet):
     """ViewSet for posts"""
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [permissions.AllowAny]  # Temporarily allow any for testing
+    permission_classes = [permissions.AllowAny]  # Allow any for reading, but check auth in voting
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['vote', 'destroy', 'update', 'partial_update']:
+            permission_classes = [IsSupabaseAuthenticated]
+        else:
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         queryset = Post.objects.all()
         subject_id = self.request.query_params.get('subject', None)
+        user_id = self.request.query_params.get('user', None)
         search = self.request.query_params.get('search', None)
         
         if subject_id is not None:
             queryset = queryset.filter(subject_id=subject_id)
+        if user_id is not None:
+            queryset = queryset.filter(posted_by_id=user_id)
         if search is not None:
             queryset = queryset.filter(
                 Q(topic__icontains=search) | 
@@ -189,27 +204,37 @@ class PostViewSet(viewsets.ModelViewSet):
             try:
                 user_profile = UserProfile.objects.get(id=posted_by_id)
                 serializer.save(posted_by=user_profile)
-                
-                # Award points for posting
-                user_profile.points += 5
-                user_profile.save()
+                # No points awarded for posting (simplified system)
             except UserProfile.DoesNotExist:
                 serializer.save()  # Save without posted_by if user not found
         else:
             serializer.save()  # Save without posted_by if not provided
 
+    def destroy(self, request, *args, **kwargs):
+        """Delete a post - only allow post owner to delete"""
+        post = self.get_object()
+        
+        # Check if user is authenticated
+        if not request.user:
+            return Response({'error': 'Authentication required for deleting posts'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Check if the authenticated user is the owner of the post
+        if post.posted_by != request.user:
+            return Response({'error': 'You can only delete your own posts'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Delete the post
+        post.delete()
+        return Response({'message': 'Post deleted successfully'}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'])
     def vote(self, request, pk=None):
         """Vote on a post (upvote/downvote)"""
-        # Use authenticated user from SupabaseAuthentication
-        if not request.user or not hasattr(request.user, 'supabase_uid'):
+        # Get the UserProfile from the custom authentication
+        if not request.user:
             return Response({'error': 'Authentication required for voting'}, status=status.HTTP_401_UNAUTHORIZED)
             
         post = self.get_object()
-        try:
-            user_profile = UserProfile.objects.get(supabase_uid=request.user.supabase_uid)
-        except UserProfile.DoesNotExist:
-            return Response({'error': 'User profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        user_profile = request.user  # This is the UserProfile object from SupabaseAuthentication
             
         vote_value = request.data.get('vote')  # 1 for upvote, -1 for downvote, 0 to remove vote
         
@@ -223,17 +248,11 @@ class PostViewSet(viewsets.ModelViewSet):
                 old_vote = existing_vote.vote
                 existing_vote.delete()
                 
-                # Update post vote counts
+                # Update post vote counts (no points system)
                 if old_vote == 1:
                     post.upvotes -= 1
-                    # Remove points from post author for removed upvote
-                    post.posted_by.points = max(0, post.posted_by.points - 1)
-                    post.posted_by.save()
                 else:
                     post.downvotes -= 1
-                    # Add back 1 point for removed downvote
-                    post.posted_by.points += 1
-                    post.posted_by.save()
                     
                 post.save()
                 
@@ -266,28 +285,19 @@ class PostViewSet(viewsets.ModelViewSet):
             vote.vote = vote_value
             vote.save()
             
-            # Update post vote counts and points for vote change
+            # Update post vote counts (no points system)
             if old_vote == 1:
                 post.upvotes -= 1
-                # Remove points for old upvote
-                post.posted_by.points = max(0, post.posted_by.points - 1)
             else:
                 post.downvotes -= 1
-                # Add back point for old downvote removal
-                post.posted_by.points += 1
         
-        # Update post vote counts and points for new vote
+        # Update post vote counts for new vote (no points system)
         if vote_value == 1:
             post.upvotes += 1
-            # Award point for new upvote
-            post.posted_by.points += 1
         else:
             post.downvotes += 1
-            # Deduct point for new downvote
-            post.posted_by.points = max(0, post.posted_by.points - 1)
             
         post.save()
-        post.posted_by.save()
         
         # Return updated post data
         return Response({
@@ -337,7 +347,17 @@ class InterviewExperienceViewSet(viewsets.ModelViewSet):
     """ViewSet for interview experiences"""
     queryset = InterviewExperience.objects.all()
     serializer_class = InterviewExperienceSerializer
-    permission_classes = [permissions.AllowAny]  # Temporarily allow any for testing
+    permission_classes = [permissions.AllowAny]  # Allow any for reading, but check auth in voting
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'vote':
+            permission_classes = [IsSupabaseAuthenticated]
+        else:
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         queryset = InterviewExperience.objects.all()
@@ -357,31 +377,26 @@ class InterviewExperienceViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Set the posted_by to current user
         user_profile = None
-        if self.request.user.is_authenticated:
+        if hasattr(self.request, 'user') and hasattr(self.request.user, 'supabase_uid'):
             try:
-                user_profile = UserProfile.objects.get(supabase_uid=self.request.user.supabase_uid)
+                user_profile = self.request.user  # request.user is already the UserProfile object
                 serializer.save(posted_by=user_profile)
-            except UserProfile.DoesNotExist:
+            except Exception:
                 serializer.save()  # Save without posted_by if user profile not found
         else:
             serializer.save()  # Save without posted_by if not authenticated
         
-        # Award points for sharing experience (only if user profile exists)
-        if user_profile:
-            user_profile.points += 10
-            user_profile.save()
+        # No points awarded for sharing experience (simplified system)
 
     @action(detail=True, methods=['post'])
     def vote(self, request, pk=None):
         """Vote on an interview experience"""
-        if not request.user.is_authenticated:
+        # Get the UserProfile from the custom authentication
+        if not request.user:
             return Response({'error': 'Authentication required for voting'}, status=status.HTTP_401_UNAUTHORIZED)
             
         experience = self.get_object()
-        try:
-            user_profile = UserProfile.objects.get(supabase_uid=request.user.supabase_uid)
-        except UserProfile.DoesNotExist:
-            return Response({'error': 'User profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        user_profile = request.user  # This is the UserProfile object from SupabaseAuthentication
             
         is_upvote = request.data.get('is_upvote', True)
         
