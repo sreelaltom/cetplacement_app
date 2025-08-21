@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 import ProfileSetup from "./components/ProfileSetup";
 import SubjectBrowser from "./components/SubjectBrowser";
 import SubjectDetail from "./components/SubjectDetail";
@@ -170,6 +171,15 @@ function App() {
                   <ProtectedRoute>
                     <Navbar />
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/:userId"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <UserProfile />
                   </ProtectedRoute>
                 }
               />

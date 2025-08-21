@@ -46,6 +46,13 @@ const PostCard = ({
     }
   };
 
+  const handleAuthorClick = (e) => {
+    e.stopPropagation(); // Prevent card navigation when clicking author name
+    if (post.posted_by) {
+      navigate(`/user/${post.posted_by}`);
+    }
+  };
+
   const handleVoteClick = (e) => {
     e.stopPropagation(); // Prevent card navigation when voting
     if (onVote) {
@@ -180,8 +187,26 @@ const PostCard = ({
                 marginLeft: "auto",
               }}
             >
-              by {post.posted_by_name || "Anonymous"} •{" "}
-              {new Date(post.created_at).toLocaleDateString()}
+              by{" "}
+              <span
+                onClick={handleAuthorClick}
+                style={{
+                  color: theme.colors.primary,
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  fontWeight: theme.typography.fontWeight.medium,
+                  transition: theme.transitions.normal,
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.textDecoration = "underline";
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.textDecoration = "none";
+                }}
+              >
+                {post.posted_by_name || "Anonymous"}
+              </span>{" "}
+              • {new Date(post.created_at).toLocaleDateString()}
             </span>
           </div>
 
