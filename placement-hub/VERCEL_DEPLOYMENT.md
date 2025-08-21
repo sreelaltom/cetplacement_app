@@ -1,14 +1,17 @@
 # 🚀 Complete Vercel Deployment Guide for Placement Hub
 
 ## Overview
+
 This guide will help you deploy both your Django backend and React frontend on Vercel.
 
 ## 📋 Prerequisites
+
 1. GitHub account
 2. Vercel account (sign up at vercel.com)
 3. Supabase account for database (or any PostgreSQL database)
 
 ## 🗂️ Repository Structure
+
 ```
 placement-hub/
 ├── backend/          # Django API
@@ -26,6 +29,7 @@ placement-hub/
 ### 1. Prepare Your Repository
 
 #### Push to GitHub
+
 ```bash
 git add .
 git commit -m "Prepare for Vercel deployment"
@@ -35,6 +39,7 @@ git push origin main
 ### 2. Deploy Backend (Django) on Vercel
 
 #### A. Create Vercel Project for Backend
+
 1. Go to [vercel.com](https://vercel.com) and sign in
 2. Click "New Project"
 3. Import your GitHub repository
@@ -43,6 +48,7 @@ git push origin main
 6. Click "Deploy"
 
 #### B. Configure Environment Variables
+
 In Vercel Dashboard → Settings → Environment Variables, add:
 
 ```env
@@ -61,6 +67,7 @@ FRONTEND_URL=https://your-frontend-domain.vercel.app
 ```
 
 #### C. Database Setup (Supabase)
+
 1. Go to [supabase.com](https://supabase.com)
 2. Create new project
 3. Go to Settings → Database
@@ -71,6 +78,7 @@ FRONTEND_URL=https://your-frontend-domain.vercel.app
 ### 3. Deploy Frontend (React) on Vercel
 
 #### A. Create Vercel Project for Frontend
+
 1. Click "New Project" in Vercel
 2. Import the same GitHub repository
 3. Set **Root Directory** to `frontend`
@@ -78,6 +86,7 @@ FRONTEND_URL=https://your-frontend-domain.vercel.app
 5. Click "Deploy"
 
 #### B. Configure Frontend Environment Variables
+
 In Vercel Dashboard → Settings → Environment Variables:
 
 ```env
@@ -91,13 +100,16 @@ Update your frontend API service to use the production URL:
 
 ```javascript
 // In frontend/src/services/api.js
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 ```
 
 ### 5. Initialize Database
 
 #### A. Run Migrations
+
 After backend deployment, run migrations via Vercel Function:
+
 1. Go to your backend Vercel project
 2. Navigate to Functions tab
 3. Trigger the migration endpoint or use Vercel CLI:
@@ -117,11 +129,13 @@ vercel exec -- python manage.py migrate
 ```
 
 #### B. Create Initial Data
+
 ```bash
 vercel exec -- python populate_initial_data.py
 ```
 
 #### C. Create Superuser
+
 ```bash
 vercel exec -- python manage.py createsuperuser
 ```
@@ -129,6 +143,7 @@ vercel exec -- python manage.py createsuperuser
 ## 🔧 Configuration Files
 
 ### Backend vercel.json (already created)
+
 ```json
 {
   "version": 2,
@@ -153,6 +168,7 @@ vercel exec -- python manage.py createsuperuser
 ```
 
 ### Frontend vercel.json (create this in frontend/)
+
 ```json
 {
   "rewrites": [
@@ -178,24 +194,29 @@ vercel exec -- python manage.py createsuperuser
 ### Common Issues:
 
 #### 1. CORS Errors
+
 - Ensure frontend URL is in `CORS_ALLOWED_ORIGINS`
 - Check `FRONTEND_URL` environment variable
 
 #### 2. Database Connection
+
 - Verify `DATABASE_URL` format
 - Check Supabase connection settings
 - Ensure database is accessible from Vercel
 
 #### 3. Static Files
+
 - Run `python manage.py collectstatic`
 - Check static file configuration
 
 #### 4. Build Failures
+
 - Check `requirements.txt` has all dependencies
 - Verify Python version compatibility
 - Check build logs in Vercel dashboard
 
 ### Useful Commands:
+
 ```bash
 # View logs
 vercel logs
@@ -225,6 +246,7 @@ vercel env add VARIABLE_NAME
 ## 🔄 Continuous Deployment
 
 Vercel automatically deploys when you push to GitHub:
+
 - `main` branch → Production
 - Other branches → Preview deployments
 
