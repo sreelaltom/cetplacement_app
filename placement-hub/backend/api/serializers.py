@@ -69,11 +69,16 @@ class PostSerializer(serializers.ModelSerializer):
 
 class CompanySerializer(serializers.ModelSerializer):
     """Serializer for companies"""
+    tier = serializers.SerializerMethodField()
     
     class Meta:
         model = Company
         fields = ['id', 'name', 'website', 'tier', 'created_at', 'salary_range']
         read_only_fields = ['id', 'created_at']
+    
+    def get_tier(self, obj):
+        """Return tier or default value if None"""
+        return obj.tier if obj.tier else 'tier1'
 
 
 class InterviewExperienceSerializer(serializers.ModelSerializer):
