@@ -39,18 +39,20 @@ const PostCard = ({
   };
 
   const handleCardClick = () => {
-    console.log("Card clicked - navigating to subject");
-    if (post.subject?.name) {
-      navigate(`/subjects/${encodeURIComponent(post.subject.name)}`);
+    if (post.subject?.id) {
+      navigate(`/subject/${post.subject.id}`);
+    } else if (post.subject_id) {
+      navigate(`/subject/${post.subject_id}`);
+    } else if (post.subject?.name) {
+      navigate(`/subject/${encodeURIComponent(post.subject.name)}`);
     } else if (post.subject_name) {
-      navigate(`/subjects/${encodeURIComponent(post.subject_name)}`);
+      navigate(`/subject/${encodeURIComponent(post.subject_name)}`);
     }
   };
 
   const handleAuthorClick = (e) => {
     e.stopPropagation(); // Prevent card navigation when clicking author name
     e.preventDefault(); // Prevent any default behavior
-    console.log("Author clicked:", post.posted_by_name, "ID:", post.posted_by);
     if (post.posted_by) {
       navigate(`/user/${post.posted_by}`);
     }
