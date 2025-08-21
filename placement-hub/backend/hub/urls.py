@@ -57,9 +57,13 @@ def simple_companies_bypass(request):
             'traceback': traceback.format_exc()
         }, status=500)
 
+# Import the schema fix function
+from api.fix_schema import fix_company_schema
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('simple-health/', simple_health_check, name='simple_health'),
     path('bypass-companies/', simple_companies_bypass, name='bypass_companies'),
+    path('fix-schema/', fix_company_schema, name='fix_schema'),
 ]

@@ -6,7 +6,7 @@ async function testAllCompanyEndpoints() {
     "/api/debug/companies/",
     "/api/simple/companies/",
     "/api/minimal/companies/",
-    "/bypass-companies/"
+    "/bypass-companies/",
   ];
 
   for (const endpoint of endpoints) {
@@ -14,7 +14,7 @@ async function testAllCompanyEndpoints() {
       console.log(`\n=== Testing: ${baseUrl}${endpoint} ===`);
       const response = await fetch(`${baseUrl}${endpoint}`);
       console.log("Status:", response.status);
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log("✅ SUCCESS! Data:", JSON.stringify(data, null, 2));
