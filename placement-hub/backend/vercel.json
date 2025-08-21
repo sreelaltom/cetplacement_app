@@ -4,13 +4,9 @@
     {
       "src": "hub/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
-    },
-    {
-      "src": "build_files.sh",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "staticfiles_build"
+      "config": { 
+        "maxLambdaSize": "15mb", 
+        "runtime": "python3.9" 
       }
     }
   ],
@@ -25,12 +21,6 @@
     }
   ],
   "env": {
-    "DJANGO_SETTINGS_MODULE": "hub.settings",
-    "PYTHONPATH": "/var/task"
-  },
-  "functions": {
-    "hub/wsgi.py": {
-      "includeFiles": "**"
-    }
+    "DJANGO_SETTINGS_MODULE": "hub.settings"
   }
 }
