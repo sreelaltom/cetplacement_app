@@ -314,7 +314,19 @@ class CompanyViewSet(viewsets.ModelViewSet):
     """ViewSet for companies"""
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
-    permission_classes = [permissions.AllowAny]  # Temporarily allow any for testing
+    permission_classes = [permissions.AllowAny]  # Default for read operations
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        Only admin can create, update, or delete companies.
+        """
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [permissions.IsAdminUser]
+        else:
+            # Allow anyone to read companies (list, retrieve)
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         queryset = Company.objects.all()
@@ -346,6 +358,17 @@ class CompanyViewSet(viewsets.ModelViewSet):
             return Response({
                 'error': str(e),
                 'message': 'Error retrieving company',
+                'type': type(e).__name__
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def create(self, request, *args, **kwargs):
+        """Override create to provide better error messages for unauthorized access"""
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response({
+                'error': str(e),
+                'message': 'Error creating company. Only admin users can create companies.',
                 'type': type(e).__name__
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
