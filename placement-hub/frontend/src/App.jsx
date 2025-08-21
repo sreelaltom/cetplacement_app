@@ -24,7 +24,14 @@ import "./App.css";
 // Admin Redirect component
 const AdminRedirect = () => {
   React.useEffect(() => {
-    window.location.href = "http://127.0.0.1:8000/admin/login/?next=/admin/";
+    // Get the API base URL from environment or use default
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+    // Remove /api from the end to get the admin URL
+    const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+    const adminUrl = `${baseUrl}/admin/login/?next=/admin/`;
+    
+    console.log("Redirecting to admin:", adminUrl);
+    window.location.href = adminUrl;
   }, []);
 
   return (

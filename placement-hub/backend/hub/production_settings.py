@@ -12,7 +12,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # Add common production domains if ALLOWED_HOSTS is not properly set
 if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
-    ALLOWED_HOSTS = ['*']  # Be more specific in actual production
+    ALLOWED_HOSTS = ['cetplacement-app.vercel.app', '.vercel.app', 'localhost', '127.0.0.1']  # Be more specific in actual production
 
 # Fix admin redirect URLs in production
 USE_TZ = True
@@ -24,6 +24,16 @@ USE_I18N = True
 
 # Force the use of a specific scheme and domain for admin
 FORCE_SCRIPT_NAME = ''
+
+# Production URL settings to prevent localhost redirects
+if not DEBUG:
+    # Force HTTPS in production (uncomment when ready)
+    # SECURE_SSL_REDIRECT = True
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
+    
+    # Prevent localhost redirects
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Admin login/logout redirect settings
 LOGIN_URL = '/admin/login/'
