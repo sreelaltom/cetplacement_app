@@ -15,12 +15,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hub.settings')
 
 try:
     from django.core.wsgi import get_wsgi_application
-    application = get_wsgi_application()
+    app = get_wsgi_application()  # Use 'app' instead of 'application' for Vercel
 except Exception as e:
     # Fallback WSGI application for debugging
-    def application(environ, start_response):
+    def app(environ, start_response):
         status = '500 Internal Server Error'
-        headers = [('Content-type', 'text/plain')]
+        headers = [
+            ('Content-type', 'text/plain'),
+            ('Access-Control-Allow-Origin', '*')
+        ]
         start_response(status, headers)
         error_msg = f"Django WSGI Error: {str(e)}\nPython path: {sys.path[:3]}\nCurrent dir: {current_dir}"
         return [error_msg.encode('utf-8')]
