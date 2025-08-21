@@ -17,7 +17,7 @@ class UserProfile(models.Model):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=100)
     branch = models.CharField(max_length=100, blank=True, null=True)  # Keep as CharField for now
-    year = models.IntegerField(choices=[(1, '1st Year'), (2, '2nd Year'), (3, '3rd Year'), (4, '4th Year')])
+    year = models.IntegerField(choices=[(1, '1st Year'), (2, '2nd Year'), (3, '3rd Year'), (4, '4th Year'), (5, 'Passout')])
     points = models.IntegerField(default=0)
     placement_status = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
