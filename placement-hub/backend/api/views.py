@@ -321,8 +321,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
         
         if search is not None:
             queryset = queryset.filter(
-                Q(name__icontains=search) | 
-                Q(description__icontains=search)
+                Q(name__icontains=search)
             )
             
         return queryset.order_by('name')
