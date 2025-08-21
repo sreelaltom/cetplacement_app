@@ -325,6 +325,28 @@ class CompanyViewSet(viewsets.ModelViewSet):
             )
             
         return queryset.order_by('name')
+    
+    def list(self, request, *args, **kwargs):
+        """Override list to handle potential serialization errors"""
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            return Response({
+                'error': str(e),
+                'message': 'Error retrieving companies',
+                'type': type(e).__name__
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def retrieve(self, request, *args, **kwargs):
+        """Override retrieve to handle potential serialization errors"""
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Exception as e:
+            return Response({
+                'error': str(e),
+                'message': 'Error retrieving company',
+                'type': type(e).__name__
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['get'])
     def experiences(self, request, pk=None):
