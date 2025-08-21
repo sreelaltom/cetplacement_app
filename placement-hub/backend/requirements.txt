@@ -4,8 +4,8 @@
 Django==4.2.7
 djangorestframework==3.14.0
 
-# Database
-psycopg2-binary==2.9.7
+# Database - Using a more Vercel-compatible version
+psycopg2-binary==2.9.3
 
 # CORS handling
 django-cors-headers==4.3.1
@@ -28,8 +28,8 @@ whitenoise==6.6.0
 # Database URL parsing for production
 dj-database-url==2.1.0
 
-# Development tools
-django-extensions==3.2.3
+# Development tools (commented out for production)
+# django-extensions==3.2.3
 
-# API documentation (optional)
-drf-spectacular==0.26.5
+# API documentation (optional, commented out for smaller build)
+# drf-spectacular==0.26.5
