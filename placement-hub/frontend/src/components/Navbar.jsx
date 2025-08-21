@@ -30,7 +30,7 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    setIsMenuOpen(false);
+    setIsOpen(false);
   };
 
   const navLinks = [
@@ -207,7 +207,7 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setIsOpen(!isOpen)}
               style={{
                 display: window.innerWidth < 768 ? "block" : "none",
                 backgroundColor: "transparent",
@@ -228,14 +228,14 @@ const Navbar = () => {
                 e.target.style.color = theme.colors.primary;
               }}
             >
-              {isMenuOpen ? "✕" : "☰"}
+              {isOpen ? "✕" : "☰"}
             </button>
           </>
         )}
       </div>
 
       {/* Mobile Menu */}
-      {user && isMenuOpen && (
+      {user && isOpen && (
         <div
           style={{
             display: window.innerWidth < 768 ? "block" : "none",
@@ -258,7 +258,7 @@ const Navbar = () => {
               <NavLink
                 key={link.to}
                 to={link.to}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => setIsOpen(false)}
                 isMobile={true}
               >
                 {link.label}
