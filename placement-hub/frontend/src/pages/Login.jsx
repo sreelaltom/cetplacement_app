@@ -94,7 +94,7 @@ const Login = () => {
       } else if (mode === "magic") {
         result = await signInWithMagicLink(formData.email);
         if (!result.error) {
-          alert("Magic link sent! Check your email to sign in.");
+          alert("Login link sent! Check your email to sign in.");
           return;
         }
       }
@@ -274,7 +274,7 @@ const Login = () => {
                       : "none",
                 }}
               >
-                Magic Link
+                Login Using Mail
               </button>
             </div>
           </div>
@@ -602,7 +602,7 @@ const Login = () => {
               ) : mode === "signup" ? (
                 "Create Account"
               ) : mode === "magic" ? (
-                "Send Magic Link"
+                "Send Login Link"
               ) : (
                 "Sign In"
               )}
@@ -628,7 +628,7 @@ const Login = () => {
               <p>🎓 Exclusive access for CET students and alumni</p>
               {mode === "magic" && (
                 <p style={{ color: "#2563eb", fontWeight: "500" }}>
-                  Magic link provides passwordless sign-in via email
+                  Login link provides passwordless sign-in via email
                 </p>
               )}
             </div>
