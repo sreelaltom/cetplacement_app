@@ -83,19 +83,22 @@ WSGI_APPLICATION = 'hub.wsgi.application'
 # Database - Supabase PostgreSQL
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Use SQLite for local development if Supabase connection fails
-if os.environ.get('USE_SQLITE', 'false').lower() == 'true':
+# Database configuration with fallback
+# Use SQLite for local development or when env vars are missing
+if os.environ.get('USE_SQLITE', 'false').lower() == 'true' or not os.environ.get('DATABASE_URL') and not os.environ.get('SUPABASE_DB_PASSWORD'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    print("Using SQLite database")
 # First try DATABASE_URL, fallback to individual env vars
 elif os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.parse(os.environ.get('DATABASE_URL'), conn_max_age=60, conn_health_checks=True)
     }
+    print("Using DATABASE_URL for database connection")
 else:
     DATABASES = {
         'default': {
@@ -114,6 +117,7 @@ else:
             'CONN_HEALTH_CHECKS': True,
         }
     }
+    print("Using individual environment variables for PostgreSQL")
 
 
 # Password validation
@@ -170,13 +174,18 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-# CORS settings for React frontend
+# CORS settings for React frontend - Simplified for deployment
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily allow all origins
+CORS_ALLOW_CREDENTIALS = True
+
+# Specific allowed origins for production (backup)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React dev server
     "http://127.0.0.1:3000",
     "http://localhost:5173",  # Vite dev server
     "http://127.0.0.1:5173",
     "https://cetplacement-app.vercel.app",  # Production frontend
+    "https://cetplacement-backend.vercel.app",  # Backend domain
 ]
 
 # Add production domains from environment variables
@@ -188,9 +197,6 @@ if not DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
         "https://*.vercel.app",
     ])
-
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = not DEBUG  # Allow all origins in production (consider restricting)
 
 # Additional CORS headers for better compatibility
 CORS_ALLOW_HEADERS = [
