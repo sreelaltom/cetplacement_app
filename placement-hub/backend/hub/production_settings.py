@@ -10,6 +10,29 @@ DEBUG = False
 # SECURITY WARNING: define allowed hosts properly
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
+# Add common production domains if ALLOWED_HOSTS is not properly set
+if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
+    ALLOWED_HOSTS = ['*']  # Be more specific in actual production
+
+# Fix admin redirect URLs in production
+USE_TZ = True
+TIME_ZONE = 'Asia/Kolkata'  # Set appropriate timezone
+
+# Ensure proper URL generation
+USE_L10N = True
+USE_I18N = True
+
+# Force the use of a specific scheme and domain for admin
+FORCE_SCRIPT_NAME = ''
+
+# Admin login/logout redirect settings
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/admin/'
+LOGOUT_REDIRECT_URL = '/admin/'
+
+# Ensure proper URL generation in production
+APPEND_SLASH = True
+
 # Database
 # Use environment variable for production database
 if 'DATABASE_URL' in os.environ:
