@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "db_test_wsgi.py",
+      "src": "hub/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -17,16 +17,11 @@
     },
     {
       "src": "/(.*)",
-      "dest": "db_test_wsgi.py"
+      "dest": "hub/wsgi.py"
     }
   ],
   "env": {
     "DJANGO_SETTINGS_MODULE": "hub.settings",
-    "DEBUG": "False",
-    "DATABASE_URL": "postgresql://postgres.byoqkhieazizoesflvms:Sreelaltom%40123@aws-1-us-east-2.pooler.supabase.com:6543/postgres",
-    "SUPABASE_DB_PASSWORD": "Sreelaltom@123",
-    "SUPABASE_DB_HOST": "aws-1-us-east-2.pooler.supabase.com",
-    "SUPABASE_DB_NAME": "postgres",
-    "SUPABASE_DB_USER": "postgres.byoqkhieazizoesflvms"
+    "DEBUG": "False"
   }
 }
