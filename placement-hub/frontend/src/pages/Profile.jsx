@@ -127,7 +127,24 @@ const Profile = () => {
         "Setting form data and fetching posts for userProfile:",
         userProfile
       );
+      console.log("Current userProfile fields:", {
+        bio: userProfile.bio,
+        skills: userProfile.skills,
+        linkedin_url: userProfile.linkedin_url,
+        github_url: userProfile.github_url,
+        year: userProfile.year,
+      });
       setFormData({
+        full_name: userProfile.full_name || "",
+        branch: userProfile.branch || "",
+        year: userProfile.year || 1,
+        bio: userProfile.bio || "",
+        skills: userProfile.skills || "",
+        linkedin_url: userProfile.linkedin_url || "",
+        github_url: userProfile.github_url || "",
+      });
+
+      console.log("Form data set to:", {
         full_name: userProfile.full_name || "",
         branch: userProfile.branch || "",
         year: userProfile.year || 1,
@@ -195,7 +212,7 @@ const Profile = () => {
     setMessage({ type: "", text: "" });
 
     try {
-      const { error } = await updateProfile(formData);
+      const { data, error } = await updateProfile(formData);
 
       if (error) {
         setMessage({
@@ -203,10 +220,24 @@ const Profile = () => {
           text: "Failed to update profile. Please try again.",
         });
       } else {
+        console.log("Profile update successful, received data:", data);
         setMessage({
           type: "success",
           text: "Profile updated successfully!",
         });
+        // Refresh form data with updated profile
+        if (data) {
+          console.log("Updating form data with:", data);
+          setFormData({
+            full_name: data.full_name || "",
+            branch: data.branch || "",
+            year: data.year || 1,
+            bio: data.bio || "",
+            skills: data.skills || "",
+            linkedin_url: data.linkedin_url || "",
+            github_url: data.github_url || "",
+          });
+        }
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -580,6 +611,7 @@ const Profile = () => {
                     <option value={2}>2nd Year</option>
                     <option value={3}>3rd Year</option>
                     <option value={4}>4th Year</option>
+                    <option value={5}>Passout</option>
                   </select>
                 </div>
               </div>

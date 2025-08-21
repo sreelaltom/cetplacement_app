@@ -77,6 +77,24 @@ const ProfileSetup = () => {
     "Not Looking",
   ];
 
+  // Helper function to display year
+  const getYearDisplay = (year) => {
+    switch (year) {
+      case 1:
+        return "1st Year";
+      case 2:
+        return "2nd Year";
+      case 3:
+        return "3rd Year";
+      case 4:
+        return "4th Year";
+      case 5:
+        return "Passout";
+      default:
+        return `Year ${year}`;
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -269,7 +287,7 @@ const ProfileSetup = () => {
                           fontSize: "0.8rem",
                         }}
                       >
-                        {userProfile.year} Year
+                        {getYearDisplay(userProfile.year)}
                       </span>
                     </div>
                   </div>
@@ -467,6 +485,7 @@ const ProfileSetup = () => {
                     <option value={2}>2nd Year</option>
                     <option value={3}>3rd Year</option>
                     <option value={4}>4th Year</option>
+                    <option value={5}>Passout</option>
                   </select>
                 </div>
 

@@ -6,7 +6,25 @@ import { theme } from "../styles/theme";
 const Navbar = () => {
   const { user, userProfile, signOut } = useAuth();
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Helper function to display year
+  const getYearDisplay = (year) => {
+    switch (year) {
+      case 1:
+        return "1st Year";
+      case 2:
+        return "2nd Year";
+      case 3:
+        return "3rd Year";
+      case 4:
+        return "4th Year";
+      case 5:
+        return "Passout";
+      default:
+        return `Year ${year}`;
+    }
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
@@ -154,7 +172,7 @@ const Navbar = () => {
                       {userProfile.full_name}
                     </div>
                     <div style={{ fontSize: theme.typography.fontSize.xs }}>
-                      {userProfile.branch} • {userProfile.year}
+                      {userProfile.branch} • {getYearDisplay(userProfile.year)}
                     </div>
                   </div>
                 )}
@@ -270,7 +288,7 @@ const Navbar = () => {
                     {userProfile.full_name}
                   </div>
                   <div style={{ fontSize: theme.typography.fontSize.xs }}>
-                    {userProfile.branch} • {userProfile.year}
+                    {userProfile.branch} • {getYearDisplay(userProfile.year)}
                   </div>
                 </div>
               )}

@@ -491,6 +491,24 @@ const Dashboard = () => {
     );
   }
 
+  // Helper function to display year
+  const getYearDisplay = (year) => {
+    switch (year) {
+      case 1:
+        return "1st Year";
+      case 2:
+        return "2nd Year";
+      case 3:
+        return "3rd Year";
+      case 4:
+        return "4th Year";
+      case 5:
+        return "Passout";
+      default:
+        return `Year ${year}`;
+    }
+  };
+
   // Get display name for welcome message
   const displayName =
     userProfile?.full_name || user?.email?.split("@")[0] || "User";
@@ -563,7 +581,7 @@ const Dashboard = () => {
                     fontSize: theme.typography.fontSize.base,
                   }}
                 >
-                  📚 {userProfile.branch} - Year {userProfile.year}
+                  📚 {userProfile.branch} - {getYearDisplay(userProfile.year)}
                 </span>
               </div>
             )}
@@ -1093,6 +1111,7 @@ const BranchSelector = ({ branches, onClose, userProfile }) => {
               <option value={2}>2nd Year</option>
               <option value={3}>3rd Year</option>
               <option value={4}>4th Year</option>
+              <option value={5}>Passout</option>
             </select>
           </div>
 

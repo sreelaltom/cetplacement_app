@@ -19,7 +19,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['id', 'supabase_uid', 'email', 'full_name', 'branch', 'year', 
-                 'points', 'placement_status', 'created_at', 'updated_at']
+                 'bio', 'skills', 'linkedin_url', 'github_url', 'points', 
+                 'placement_status', 'created_at', 'updated_at']
         read_only_fields = ['id', 'points', 'created_at', 'updated_at']
 
 
