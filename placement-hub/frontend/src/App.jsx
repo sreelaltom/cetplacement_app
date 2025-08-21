@@ -8,6 +8,7 @@ import {
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { theme } from "./styles/theme";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -129,101 +130,106 @@ function App() {
             backgroundColor: theme.colors.surface,
             fontFamily: theme.typography.fontFamily.primary,
             color: theme.colors.text,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <Routes>
-            {/* Public Routes */}
-            <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <Home />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
+          <div style={{ flex: 1 }}>
+            <Routes>
+              {/* Public Routes */}
+              <Route
+                path="/"
+                element={
+                  <PublicRoute>
+                    <Home />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile-setup"
-              element={
-                <ProtectedRoute>
-                  <ProfileSetup />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/subject-browser"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <SubjectBrowser />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/subjects"
-              element={<Navigate to="/subject-browser" replace />}
-            />
-            <Route
-              path="/companies"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <Companies />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/company/:id"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <CompanyPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/subject/:subjectId"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <SubjectDetail />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile-setup"
+                element={
+                  <ProtectedRoute>
+                    <ProfileSetup />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subject-browser"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <SubjectBrowser />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subjects"
+                element={<Navigate to="/subject-browser" replace />}
+              />
+              <Route
+                path="/companies"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <Companies />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company/:id"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <CompanyPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subject/:subjectId"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <SubjectDetail />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Admin redirect */}
-            <Route path="/admin" element={<AdminRedirect />} />
+              {/* Admin redirect */}
+              <Route path="/admin" element={<AdminRedirect />} />
 
-            {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+              {/* Catch all route */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
+          <Footer />
         </div>
       </Router>
     </AuthProvider>
