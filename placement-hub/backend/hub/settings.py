@@ -84,22 +84,51 @@ WSGI_APPLICATION = 'hub.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Database configuration with fallback
-# Use SQLite for local development or when env vars are missing
-if os.environ.get('USE_SQLITE', 'false').lower() == 'true' or not os.environ.get('DATABASE_URL') and not os.environ.get('SUPABASE_DB_PASSWORD'):
+# Force PostgreSQL in production (when DEBUG=False)
+if not DEBUG:
+    # Production: Always use PostgreSQL/Supabase
+    if os.environ.get('DATABASE_URL'):
+        DATABASES = {
+            'default': dj_database_url.parse(os.environ.get('DATABASE_URL'), conn_max_age=60, conn_health_checks=True)
+        }
+        print("Production: Using DATABASE_URL for database connection")
+    else:
+        # Fallback to individual environment variables
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('SUPABASE_DB_NAME', 'postgres'),
+                'USER': os.environ.get('SUPABASE_DB_USER', 'postgres'),
+                'PASSWORD': os.environ.get('SUPABASE_DB_PASSWORD', ''),
+                'HOST': os.environ.get('SUPABASE_DB_HOST', 'localhost'),
+                'PORT': os.environ.get('SUPABASE_DB_PORT', '5432'),
+                'OPTIONS': {
+                    'sslmode': 'require',
+                    'connect_timeout': 60,
+                    'options': '-c default_transaction_isolation=read-committed'
+                },
+                'CONN_MAX_AGE': 60,
+                'CONN_HEALTH_CHECKS': True,
+            }
+        }
+        print("Production: Using individual environment variables for PostgreSQL")
+# Development: Use SQLite for local development if specified
+elif os.environ.get('USE_SQLITE', 'false').lower() == 'true':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    print("Using SQLite database")
-# First try DATABASE_URL, fallback to individual env vars
+    print("Development: Using SQLite database")
+# Development: Use Supabase if configured
 elif os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.parse(os.environ.get('DATABASE_URL'), conn_max_age=60, conn_health_checks=True)
     }
-    print("Using DATABASE_URL for database connection")
+    print("Development: Using DATABASE_URL for database connection")
 else:
+    # Development fallback to individual env vars or default
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -117,7 +146,7 @@ else:
             'CONN_HEALTH_CHECKS': True,
         }
     }
-    print("Using individual environment variables for PostgreSQL")
+    print("Development: Using individual environment variables for PostgreSQL")
 
 
 # Password validation
