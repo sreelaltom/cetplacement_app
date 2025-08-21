@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 import { supabase, authService } from "../services/supabase";
 import apiService from "../services/api";
 
@@ -16,8 +22,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [profileFetchCache, setProfileFetchCache] = useState(new Set());
   const [lastProcessedSession, setLastProcessedSession] = useState(null);
+
+  // Use useRef for cache to prevent re-renders from clearing it
+  const profileFetchCacheRef = React.useRef(new Map());
+  const lastFetchTimeRef = React.useRef(0);
 
   useEffect(() => {
     // Get initial session
@@ -104,59 +113,85 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserProfile = async (userId, sessionUser = null) => {
-    // Prevent duplicate fetch requests
-    if (profileFetchCache.has(userId)) {
-      if (import.meta.env.DEV) {
-        console.log("Profile fetch already in progress for:", userId);
-      }
-      return;
-    }
-
-    // If we already have a profile with this supabase_uid, don't fetch again
+    // Check if we already have a profile with this supabase_uid
     if (userProfile && userProfile.supabase_uid === userId) {
       if (import.meta.env.DEV) {
         console.log("Profile already loaded for:", userId);
       }
-      return;
+      return userProfile;
+    }
+
+    // Debounce rapid successive calls (prevent calls within 100ms)
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < 100) {
+      if (import.meta.env.DEV) {
+        console.log("Debouncing profile fetch - too soon after last call");
+      }
+      return userProfile;
+    }
+    lastFetchTimeRef.current = now;
+
+    // Check if there's already a fetch in progress for this user
+    if (profileFetchCacheRef.current.has(userId)) {
+      if (import.meta.env.DEV) {
+        console.log(
+          "Profile fetch already in progress for:",
+          userId,
+          "- waiting for existing request"
+        );
+      }
+      // Return the existing promise
+      return await profileFetchCacheRef.current.get(userId);
     }
 
     if (import.meta.env.DEV) {
-      console.log("Fetching user profile for userId:", userId);
+      console.log("Starting NEW profile fetch for userId:", userId);
     }
-    setProfileFetchCache((prev) => new Set([...prev, userId]));
 
-    try {
-      const { data, error } = await apiService.getUserProfile(userId);
-      if (error) {
-        console.error("Error fetching user profile:", error);
-        console.log("Error response status:", error.response?.status);
-        console.log("Error status:", error.status);
-        // If profile doesn't exist, create one (handle both 404 and 500 errors)
-        if (
-          error.response?.status === 404 ||
-          error.status === 404 ||
-          error.response?.status === 500 ||
-          error.status === 500
-        ) {
-          console.log(
-            "Profile not found or server error, creating user profile..."
-          );
-          await createUserProfile(userId, sessionUser);
+    // Create a promise for this fetch and store it in cache
+    const fetchPromise = (async () => {
+      try {
+        const { data, error } = await apiService.getUserProfile(userId);
+        if (error) {
+          console.error("Error fetching user profile:", error);
+          if (import.meta.env.DEV) {
+            console.log("Error response status:", error.response?.status);
+          }
+          // If profile doesn't exist, create one (handle both 404 and 500 errors)
+          if (
+            error.response?.status === 404 ||
+            error.status === 404 ||
+            error.response?.status === 500 ||
+            error.status === 500
+          ) {
+            if (import.meta.env.DEV) {
+              console.log(
+                "Profile not found or server error, creating user profile..."
+              );
+            }
+            await createUserProfile(userId, sessionUser);
+          }
+          return null;
+        } else {
+          if (import.meta.env.DEV) {
+            console.log("User profile fetched successfully:", data.email);
+          }
+          setUserProfile(data);
+          return data;
         }
-      } else {
-        console.log("User profile fetched successfully:", data);
-        setUserProfile(data);
+      } catch (error) {
+        console.error("Error in fetchUserProfile:", error);
+        return null;
+      } finally {
+        // Remove from cache after fetch completes
+        profileFetchCacheRef.current.delete(userId);
       }
-    } catch (error) {
-      console.error("Error in fetchUserProfile:", error);
-    } finally {
-      // Remove from cache after fetch completes
-      setProfileFetchCache((prev) => {
-        const newCache = new Set(prev);
-        newCache.delete(userId);
-        return newCache;
-      });
-    }
+    })();
+
+    // Store the promise in cache
+    profileFetchCacheRef.current.set(userId, fetchPromise);
+
+    return await fetchPromise;
   };
 
   const createUserProfile = async (userId, sessionUser = null) => {

@@ -169,6 +169,7 @@ const apiService = {
     try {
       if (import.meta.env.DEV) {
         console.log("API: Fetching user profile for userId:", userId);
+        console.log("API: Making request to:", `/users/${userId}/`);
       }
       const response = await apiClient.get(`/users/${userId}/`);
       return { data: response.data, error: null };

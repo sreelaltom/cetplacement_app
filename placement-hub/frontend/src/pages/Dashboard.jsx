@@ -122,15 +122,15 @@ const Dashboard = () => {
     []
   );
 
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const [companies, setCompanies] = useState([]);
   const [recentPosts, setRecentPosts] = useState([]);
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState({
-    companies: true,
-    posts: true,
-    branches: true,
-    overall: true,
+    companies: false,
+    posts: false,
+    branches: false,
+    overall: false, // Start as false, will be set to true when data fetching begins
   });
   const [showBranchSelector, setShowBranchSelector] = useState(false);
   const [errors, setErrors] = useState({});
@@ -288,32 +288,48 @@ const Dashboard = () => {
     if (import.meta.env.DEV) {
       console.log(
         "Dashboard useEffect triggered, userProfile:",
-        userProfile?.email
+        userProfile?.email,
+        "authLoading:",
+        authLoading
       );
     }
+
+    // Show branch selector if user has no branch
     if (userProfile && !userProfile.branch) {
       setShowBranchSelector(true);
     }
 
-    // Only fetch data if we have a stable userProfile with an ID
-    if (userProfile?.id && !loading.overall) {
-      // Call fetchDashboardData directly without dependency issues
+    // Only fetch data if auth is complete and we have a userProfile
+    if (!authLoading && userProfile?.id) {
+      // Reset dashboard loading state and fetch data
       const loadData = async () => {
-        console.log("Starting dashboard data fetch...");
+        if (import.meta.env.DEV) {
+          console.log(
+            "Starting dashboard data fetch for user:",
+            userProfile.email
+          );
+        }
         setLoading((prev) => ({ ...prev, overall: true }));
 
         // Execute all fetches concurrently
-        await Promise.allSettled([
+        const results = await Promise.allSettled([
           fetchCompanies(),
           fetchPosts(),
           fetchBranches(),
         ]);
 
-        console.log("Dashboard data fetch completed");
+        if (import.meta.env.DEV) {
+          console.log("Dashboard data fetch completed", results);
+        }
         setLoading((prev) => ({ ...prev, overall: false }));
       };
 
       loadData();
+    } else if (import.meta.env.DEV) {
+      console.log("Waiting for auth to complete or userProfile to load", {
+        authLoading,
+        userProfileId: userProfile?.id,
+      });
     }
 
     // Cleanup function to prevent memory leaks
@@ -327,7 +343,7 @@ const Dashboard = () => {
       });
       setErrors({});
     };
-  }, [userProfile?.id]); // Only depend on userProfile.id for stability
+  }, [userProfile?.id, authLoading]); // Depend on both userProfile.id and authLoading
 
   // Memoized helper components for better performance
   const SectionLoader = useMemo(
@@ -430,12 +446,13 @@ const Dashboard = () => {
     []
   );
 
-  // Show minimal loading only for initial load
+  // Show loading if auth is still loading or if dashboard data is loading for the first time
   if (
-    loading.overall &&
-    companies.length === 0 &&
-    recentPosts.length === 0 &&
-    branches.length === 0
+    authLoading ||
+    (loading.overall &&
+      companies.length === 0 &&
+      recentPosts.length === 0 &&
+      branches.length === 0)
   ) {
     return (
       <div
@@ -467,7 +484,7 @@ const Dashboard = () => {
               fontWeight: theme.typography.fontWeight.medium,
             }}
           >
-            Loading your dashboard...
+            {authLoading ? "Authenticating..." : "Loading your dashboard..."}
           </p>
         </div>
       </div>
