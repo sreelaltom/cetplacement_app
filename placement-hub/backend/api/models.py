@@ -115,7 +115,6 @@ class Company(models.Model):
     """Companies for placement preparation"""
     name = models.CharField(max_length=100, unique=True)
     website = models.URLField(blank=True, null=True)
-    logo_url = models.URLField(blank=True, null=True)
     salary_range = models.CharField(max_length=100, blank=True, help_text="e.g., 5-10 LPA")
     tier = models.CharField(max_length=20, choices=[
         ('tier1', 'Tier 1'),

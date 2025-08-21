@@ -69,16 +69,11 @@ class PostSerializer(serializers.ModelSerializer):
 
 class CompanySerializer(serializers.ModelSerializer):
     """Serializer for companies"""
-    experiences_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Company
-        fields = ['id', 'name', 'website', 'logo_url', 
-                 'salary_range', 'tier', 'experiences_count', 'created_at']
+        fields = ['id', 'name', 'website', 'tier', 'created_at', 'salary_range']
         read_only_fields = ['id', 'created_at']
-    
-    def get_experiences_count(self, obj):
-        return obj.interview_experiences.count()
 
 
 class InterviewExperienceSerializer(serializers.ModelSerializer):

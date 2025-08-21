@@ -108,10 +108,10 @@ class PostAdmin(admin.ModelAdmin):
 # Custom admin configuration for Company
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tier', 'salary_range', 'experiences_count', 'created_at')
+    list_display = ('id', 'name', 'website', 'tier', 'created_at', 'salary_range')
     list_filter = ('tier', 'created_at')
     search_fields = ('name', 'salary_range')
-    readonly_fields = ('created_at', 'experiences_count')
+    readonly_fields = ('id', 'created_at')
     ordering = ('name',)
     
     fieldsets = (
@@ -119,21 +119,13 @@ class CompanyAdmin(admin.ModelAdmin):
             'fields': ('name', 'tier')
         }),
         ('Details', {
-            'fields': ('website', 'logo_url', 'salary_range')
-        }),
-        ('Statistics', {
-            'fields': ('experiences_count',),
-            'classes': ('collapse',)
+            'fields': ('website', 'salary_range')
         }),
         ('Timestamps', {
-            'fields': ('created_at',),
+            'fields': ('id', 'created_at'),
             'classes': ('collapse',)
         })
     )
-    
-    def experiences_count(self, obj):
-        return obj.interviewexperience_set.count()
-    experiences_count.short_description = 'Number of Experiences'
 
 # Custom admin configuration for InterviewExperience
 @admin.register(InterviewExperience)
