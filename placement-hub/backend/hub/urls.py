@@ -16,8 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+from django.conf import settings
+import sys
+
+def simple_health_check(request):
+    """Simple health check that doesn't require database"""
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Django is running',
+        'debug': settings.DEBUG,
+        'python_version': sys.version
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('simple-health/', simple_health_check, name='simple_health'),
 ]
