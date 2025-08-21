@@ -52,13 +52,19 @@ apiClient.interceptors.request.use(
         if (session?.access_token && !error) {
           // Add the JWT token to the Authorization header
           config.headers.Authorization = `Bearer ${session.access_token}`;
-          console.log("API call with auth:", config.url);
+          if (import.meta.env.DEV) {
+            console.log("API call with auth:", config.url);
+          }
         } else {
-          console.log("API call (auth required but no session):", config.url);
-          console.log("Session error:", error);
+          if (import.meta.env.DEV) {
+            console.log("API call (auth required but no session):", config.url);
+            console.log("Session error:", error);
+          }
         }
       } else {
-        console.log("API call (no auth required):", config.url);
+        if (import.meta.env.DEV) {
+          console.log("API call (no auth required):", config.url);
+        }
       }
     } catch (error) {
       console.warn("Failed to get auth token:", error);
@@ -161,7 +167,9 @@ const apiService = {
 
   async getUserProfile(userId) {
     try {
-      console.log("API: Fetching user profile for userId:", userId);
+      if (import.meta.env.DEV) {
+        console.log("API: Fetching user profile for userId:", userId);
+      }
       const response = await apiClient.get(`/users/${userId}/`);
       return { data: response.data, error: null };
     } catch (error) {

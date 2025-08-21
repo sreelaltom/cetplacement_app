@@ -14,7 +14,9 @@ import { theme } from "../styles/theme";
 import PostCard from "../components/PostCard";
 
 const Dashboard = () => {
-  console.log("Dashboard component mounted!");
+  if (import.meta.env.DEV) {
+    console.log("Dashboard component mounted!");
+  }
 
   // Error Boundary Component
   const ErrorBoundary = memo(({ children, fallback = null }) => {
@@ -283,7 +285,12 @@ const Dashboard = () => {
   );
 
   useEffect(() => {
-    console.log("Dashboard useEffect triggered, userProfile:", userProfile);
+    if (import.meta.env.DEV) {
+      console.log(
+        "Dashboard useEffect triggered, userProfile:",
+        userProfile?.email
+      );
+    }
     if (userProfile && !userProfile.branch) {
       setShowBranchSelector(true);
     }

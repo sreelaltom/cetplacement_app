@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileFetchCache, setProfileFetchCache] = useState(new Set());
+  const [lastProcessedSession, setLastProcessedSession] = useState(null);
 
   useEffect(() => {
     // Get initial session
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }) => {
 
         if (session?.user) {
           setUser(session.user);
+          setLastProcessedSession(session.access_token);
           // Validate email domain
           if (!authService.isValidEmail(session.user.email)) {
             await authService.signOut();
@@ -58,12 +60,27 @@ export const AuthProvider = ({ children }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
-      console.log("User object:", session?.user);
-      console.log("User ID:", session?.user?.id);
-      console.log("Setting loading to false after auth state change");
+      if (import.meta.env.DEV) {
+        console.log("Auth state changed:", event, session?.user?.email);
+      }
+
+      // Skip processing if this is the same session we already processed
+      if (
+        session?.access_token &&
+        lastProcessedSession &&
+        session.user?.id === user?.id &&
+        userProfile?.supabase_uid === session.user?.id
+      ) {
+        if (import.meta.env.DEV) {
+          console.log("Skipping duplicate session processing for same user");
+        }
+        setLastProcessedSession(session.access_token);
+        return;
+      }
+
       if (session?.user) {
         setUser(session.user);
+        setLastProcessedSession(session.access_token);
         // Validate email domain
         if (!authService.isValidEmail(session.user.email)) {
           await authService.signOut();
@@ -78,6 +95,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setUserProfile(null);
+        setLastProcessedSession(null);
       }
       setLoading(false);
     });
@@ -88,11 +106,23 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async (userId, sessionUser = null) => {
     // Prevent duplicate fetch requests
     if (profileFetchCache.has(userId)) {
-      console.log("Profile fetch already in progress for:", userId);
+      if (import.meta.env.DEV) {
+        console.log("Profile fetch already in progress for:", userId);
+      }
       return;
     }
 
-    console.log("Fetching user profile for userId:", userId);
+    // If we already have a profile with this supabase_uid, don't fetch again
+    if (userProfile && userProfile.supabase_uid === userId) {
+      if (import.meta.env.DEV) {
+        console.log("Profile already loaded for:", userId);
+      }
+      return;
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("Fetching user profile for userId:", userId);
+    }
     setProfileFetchCache((prev) => new Set([...prev, userId]));
 
     try {
