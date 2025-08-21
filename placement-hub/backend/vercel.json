@@ -1,31 +1,14 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.11"
-      }
+      "src": "hub/wsgi.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "wsgi.py"
+      "dest": "hub/wsgi.py"
     }
-  ],
-  "env": {
-    "DJANGO_SETTINGS_MODULE": "hub.production_settings",
-    "DEBUG": "False",
-    "DATABASE_URL": "postgresql://postgres.byoqkhieazizoesflvms:Sreelaltom%40123@aws-1-us-east-2.pooler.supabase.com:6543/postgres",
-    "DJANGO_SECRET_KEY": "placement-secret-key-production",
-    "ALLOWED_HOSTS": "cetplacement-backend.vercel.app,.vercel.app"
-  },
-  "functions": {
-    "wsgi.py": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }

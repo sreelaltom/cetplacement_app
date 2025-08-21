@@ -8,7 +8,7 @@ import os
 DEBUG = False
 
 # SECURITY WARNING: define allowed hosts properly
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'cetplacement-backend.vercel.app,.vercel.app,localhost,127.0.0.1').split(',')
 
 # Add common production domains if ALLOWED_HOSTS is not properly set
 if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
