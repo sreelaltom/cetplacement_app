@@ -852,8 +852,7 @@ const Dashboard = () => {
                           >
                             {company.name}
                           </h3>
-                          {(company.industry ||
-                            company.tier ||
+                          {(company.tier ||
                             company.salary_range) && (
                             <p
                               style={{
@@ -863,8 +862,7 @@ const Dashboard = () => {
                                 fontWeight: theme.typography.fontWeight.medium,
                               }}
                             >
-                              {company.industry ||
-                                company.tier ||
+                              {company.tier ||
                                 company.salary_range ||
                                 "Company"}
                             </p>
