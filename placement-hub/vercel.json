@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "backend/hub/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/hub/wsgi.py"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "backend/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/dist/$1"
+    }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "hub.settings"
+  },
+  "installCommand": "cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
+  "buildCommand": "cd frontend && npm run build && cd ../backend && python manage.py collectstatic --noinput"
+}
