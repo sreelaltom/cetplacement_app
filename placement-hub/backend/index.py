@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
 # Set environment variables
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hub.production_settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hub.settings')
 
 # Import Django WSGI application
 from django.core.wsgi import get_wsgi_application
