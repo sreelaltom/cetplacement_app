@@ -83,49 +83,41 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         return UserProfile.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
-        """Get a specific user profile, with better error handling"""
+        """Get a specific user profile. If not found, create it."""
+        lookup_value = kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+
         try:
-            # Get the lookup value from URL
-            lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-            lookup_value = kwargs.get(lookup_url_kwarg)
-            
-            # Try to get the object
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-            
-        except UserProfile.DoesNotExist:
+            user_profile, created = UserProfile.objects.get_or_create(
+                supabase_uid=lookup_value,
+                defaults={
+                    "name": request.data.get("name", "New User"),
+                    "email": request.data.get("email", f"user-{lookup_value}@example.com"),
+                }
+            )
+            serializer = self.get_serializer(user_profile)
             return Response({
-                'error': 'User profile not found',
-                'lookup_field': self.lookup_field,
-                'lookup_value': lookup_value,
-                'message': f'No user found with {self.lookup_field}={lookup_value}',
-                'suggestion': 'User profile may need to be created first, or check if the lookup value is correct'
-            }, status=status.HTTP_404_NOT_FOUND)
-            
+                **serializer.data,
+                "created": created
+            }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+
         except ValueError as e:
-            # Handle invalid UUID or field format
             return Response({
                 'error': 'Invalid lookup value format',
                 'lookup_field': self.lookup_field,
                 'lookup_value': lookup_value,
                 'detail': str(e),
-                'suggestion': f'Ensure the {self.lookup_field} is in the correct format'
             }, status=status.HTTP_400_BAD_REQUEST)
-            
+
         except Exception as e:
-            # Log the full error for debugging
-            import traceback
-            import logging
+            import traceback, logging
             logger = logging.getLogger(__name__)
             logger.error(f"Unexpected error in UserProfile retrieve: {str(e)}")
             logger.error(traceback.format_exc())
-            
             return Response({
                 'error': 'Internal server error',
                 'detail': str(e) if settings.DEBUG else 'An unexpected error occurred',
                 'lookup_field': self.lookup_field,
-                'lookup_value': kwargs.get(self.lookup_url_kwarg or self.lookup_field, 'unknown')
+                'lookup_value': lookup_value,
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
