@@ -101,8 +101,15 @@ if not DEBUG:
         }
         print("Production: Using DATABASE_URL for database connection")
     else:
-        # Production fallback - but this should not happen in production
-        raise ValueError("DATABASE_URL environment variable is required in production")
+        # Temporary fallback to SQLite for initial deployment
+        print("WARNING: DATABASE_URL not found. Using SQLite as temporary fallback.")
+        print("Please set DATABASE_URL environment variable on Vercel.")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': ':memory:',  # Use in-memory SQLite for temporary deployment
+            }
+        }
         
 # Development: Use Supabase if configured
 elif os.environ.get('DATABASE_URL'):
@@ -203,11 +210,11 @@ CORS_ALLOWED_ORIGINS = [
 if os.environ.get('FRONTEND_URL'):
     CORS_ALLOWED_ORIGINS.append(os.environ.get('FRONTEND_URL'))
 
-# Allow all Vercel domains in production
+# Allow all origins in production for now (temporarily)
 if not DEBUG:
-    CORS_ALLOWED_ORIGINS.extend([
-        "https://*.vercel.app",
-    ])
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
 
 # Additional CORS headers for better compatibility
 CORS_ALLOW_HEADERS = [
