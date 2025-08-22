@@ -66,10 +66,6 @@ def simple_companies_bypass(request):
         }, status=500)
 
 
-# Import schema fix view
-from api.fix_schema import fix_company_schema
-
-
 # -------------------------
 # URL patterns
 # -------------------------
@@ -79,5 +75,4 @@ urlpatterns = [
     path("simple-health/", simple_health_check, name="simple_health"),
     path("vercel-test/", vercel_test, name="vercel_test"),
     path("bypass-companies/", simple_companies_bypass, name="bypass_companies"),
-    path("fix-schema/", fix_company_schema, name="fix_schema"),
 ]
