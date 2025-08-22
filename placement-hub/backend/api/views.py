@@ -83,15 +83,15 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         return UserProfile.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
-        """Get a specific user profile. If not found, create it."""
         lookup_value = kwargs.get(self.lookup_url_kwarg or self.lookup_field)
 
         try:
             user_profile, created = UserProfile.objects.get_or_create(
                 supabase_uid=lookup_value,
                 defaults={
-                    "name": request.data.get("name", "New User"),
+                    "full_name": request.data.get("full_name", "New User"),
                     "email": request.data.get("email", f"user-{lookup_value}@example.com"),
+                    "year": request.data.get("year", 1),  # default to 1st Year
                 }
             )
             serializer = self.get_serializer(user_profile)
@@ -100,14 +100,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                 "created": created
             }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
 
-        except ValueError as e:
-            return Response({
-                'error': 'Invalid lookup value format',
-                'lookup_field': self.lookup_field,
-                'lookup_value': lookup_value,
-                'detail': str(e),
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         except Exception as e:
             import traceback, logging
             logger = logging.getLogger(__name__)
@@ -115,10 +107,11 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             logger.error(traceback.format_exc())
             return Response({
                 'error': 'Internal server error',
-                'detail': str(e) if settings.DEBUG else 'An unexpected error occurred',
+                'detail': str(e),
                 'lookup_field': self.lookup_field,
                 'lookup_value': lookup_value,
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     @action(detail=False, methods=['get'])
     def me(self, request):
