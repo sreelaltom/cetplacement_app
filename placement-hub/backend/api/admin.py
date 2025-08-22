@@ -72,7 +72,7 @@ class SubjectAdmin(admin.ModelAdmin):
     )
     
     def posts_count(self, obj):
-        return obj.post_set.count()
+        return obj.posts.count()
     posts_count.short_description = 'Number of Posts'
 
 # Custom admin configuration for Post
