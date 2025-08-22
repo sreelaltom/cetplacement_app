@@ -12,7 +12,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 # Set the settings module for production on Vercel
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hub.production_settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hub.settings')
 
 application = get_wsgi_application()
 

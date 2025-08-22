@@ -1,4 +1,0 @@
-# Constraints to ensure binary packages are used
-psycopg2-binary==2.9.9
---only-binary=psycopg2-binary
---no-binary=:none:
