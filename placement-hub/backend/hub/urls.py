@@ -1,93 +1,83 @@
 """
 URL configuration for hub project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from django.conf import settings
 import sys
+import traceback
 
+# Health check endpoint (no DB)
 def simple_health_check(request):
-    """Simple health check that doesn't require database"""
     return JsonResponse({
-        'status': 'ok',
-        'message': 'Django is running',
-        'debug': settings.DEBUG,
-        'python_version': sys.version
+        "status": "ok",
+        "message": "Django is running",
+        "debug": settings.DEBUG,
+        "python_version": sys.version,
     })
 
+
+# Vercel deployment test
 def vercel_test(request):
-    """Simple test endpoint for Vercel deployment verification"""
     try:
         import os
         return JsonResponse({
-            'status': 'success',
-            'message': 'Django app is running on Vercel',
-            'python_version': sys.version,
-            'django_settings': os.environ.get('DJANGO_SETTINGS_MODULE', 'Not set'),
-            'debug_mode': settings.DEBUG,
-            'database_url_present': bool(os.environ.get('DATABASE_URL')),
-            'allowed_hosts': settings.ALLOWED_HOSTS,
-            'environment': 'production' if not settings.DEBUG else 'development'
+            "status": "success",
+            "message": "Django app is running on Vercel",
+            "python_version": sys.version,
+            "django_settings": os.environ.get("DJANGO_SETTINGS_MODULE", "Not set"),
+            "environment": "production" if not settings.DEBUG else "development",
         })
     except Exception as e:
         return JsonResponse({
-            'status': 'error',
-            'error': str(e)
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc(),
         }, status=500)
 
+
+# Simple companies bypass (no DRF)
 def simple_companies_bypass(request):
-    """Simple companies endpoint bypassing DRF"""
     try:
         from api.models import Company
-        companies = Company.objects.all()
-        data = []
-        for c in companies:
-            data.append({
-                'id': c.id,
-                'name': c.name,
-                'tier': c.tier,
-                'website': c.website,
-                'salary_range': c.salary_range,
-                'created_at': str(c.created_at)
-            })
+        companies = Company.objects.all().order_by("id")
+
+        data = [{
+            "id": c.id,
+            "name": c.name,
+            "tier": c.tier,
+            "website": c.website,
+            "salary_range": c.salary_range,
+            "created_at": str(c.created_at),
+        } for c in companies]
+
         return JsonResponse({
-            'success': True,
-            'count': len(data),
-            'results': data
+            "success": True,
+            "count": len(data),
+            "results": data,
         })
     except Exception as e:
-        import traceback
         return JsonResponse({
-            'success': False,
-            'error': str(e),
-            'traceback': traceback.format_exc()
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc(),
         }, status=500)
 
-def favicon_view(request):
-    """Return empty response for favicon requests to prevent 404s"""
-    from django.http import HttpResponse
-    return HttpResponse(status=204)  # No Content
 
+# Import schema fix view
+from api.fix_schema import fix_company_schema
+
+
+# -------------------------
+# URL patterns
+# -------------------------
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
-    path('simple-health/', simple_health_check, name='simple_health'),
-    path('vercel-test/', vercel_test, name='vercel_test'),
-    path('bypass-companies/', simple_companies_bypass, name='bypass_companies'),
-    path('favicon.ico', favicon_view, name='favicon'),
-    path('favicon.png', favicon_view, name='favicon_png'),
+    path("admin/", admin.site.urls),
+    path("api/", include("api.urls")),   # your DRF routes
+    path("simple-health/", simple_health_check, name="simple_health"),
+    path("vercel-test/", vercel_test, name="vercel_test"),
+    path("bypass-companies/", simple_companies_bypass, name="bypass_companies"),
+    path("fix-schema/", fix_company_schema, name="fix_schema"),
 ]
