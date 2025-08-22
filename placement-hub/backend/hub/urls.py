@@ -74,10 +74,17 @@ def simple_companies_bypass(request):
             'traceback': traceback.format_exc()
         }, status=500)
 
+def favicon_view(request):
+    """Return empty response for favicon requests to prevent 404s"""
+    from django.http import HttpResponse
+    return HttpResponse(status=204)  # No Content
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('simple-health/', simple_health_check, name='simple_health'),
     path('vercel-test/', vercel_test, name='vercel_test'),
     path('bypass-companies/', simple_companies_bypass, name='bypass_companies'),
+    path('favicon.ico', favicon_view, name='favicon'),
+    path('favicon.png', favicon_view, name='favicon_png'),
 ]

@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import date
 from django.db import connection
+from django.conf import settings
 
 from .models import (
     Branch, UserProfile, Subject, Post, PostVote, Company,
@@ -84,19 +85,47 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         """Get a specific user profile, with better error handling"""
         try:
+            # Get the lookup value from URL
+            lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+            lookup_value = kwargs.get(lookup_url_kwarg)
+            
+            # Try to get the object
             instance = self.get_object()
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
+            
         except UserProfile.DoesNotExist:
             return Response({
                 'error': 'User profile not found',
-                'supabase_uid': kwargs.get('supabase_uid', 'unknown'),
-                'suggestion': 'User profile may need to be created first'
+                'lookup_field': self.lookup_field,
+                'lookup_value': lookup_value,
+                'message': f'No user found with {self.lookup_field}={lookup_value}',
+                'suggestion': 'User profile may need to be created first, or check if the lookup value is correct'
             }, status=status.HTTP_404_NOT_FOUND)
+            
+        except ValueError as e:
+            # Handle invalid UUID or field format
+            return Response({
+                'error': 'Invalid lookup value format',
+                'lookup_field': self.lookup_field,
+                'lookup_value': lookup_value,
+                'detail': str(e),
+                'suggestion': f'Ensure the {self.lookup_field} is in the correct format'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
         except Exception as e:
+            # Log the full error for debugging
+            import traceback
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Unexpected error in UserProfile retrieve: {str(e)}")
+            logger.error(traceback.format_exc())
+            
             return Response({
                 'error': 'Internal server error',
-                'detail': str(e)
+                'detail': str(e) if settings.DEBUG else 'An unexpected error occurred',
+                'lookup_field': self.lookup_field,
+                'lookup_value': kwargs.get(self.lookup_url_kwarg or self.lookup_field, 'unknown')
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'])
