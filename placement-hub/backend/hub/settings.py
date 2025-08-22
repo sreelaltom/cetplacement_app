@@ -29,7 +29,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# Default to False for production safety
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ['true', '1', 'yes']
+
+# Log the current environment for debugging
+import logging
+logger = logging.getLogger(__name__)
+logger.info(f"Django starting with DEBUG={DEBUG}")
+logger.info(f"DATABASE_URL present: {bool(os.environ.get('DATABASE_URL'))}")
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', '.railway.app', '.render.com', 'cetplacement-app.vercel.app']
 

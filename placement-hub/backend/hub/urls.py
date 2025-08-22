@@ -38,6 +38,9 @@ def vercel_test(request):
             'message': 'Django app is running on Vercel',
             'python_version': sys.version,
             'django_settings': os.environ.get('DJANGO_SETTINGS_MODULE', 'Not set'),
+            'debug_mode': settings.DEBUG,
+            'database_url_present': bool(os.environ.get('DATABASE_URL')),
+            'allowed_hosts': settings.ALLOWED_HOSTS,
             'environment': 'production' if not settings.DEBUG else 'development'
         })
     except Exception as e:
