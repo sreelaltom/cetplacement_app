@@ -89,27 +89,28 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         lookup_value = kwargs.get(self.lookup_url_kwarg or self.lookup_field)
 
         try:
-            # First try to get existing user profile
+            # First try to get existing user profile by supabase_uid
+            user_profile = None
             try:
                 user_profile = UserProfile.objects.get(supabase_uid=lookup_value)
-                created = False
             except UserProfile.DoesNotExist:
-                # If user doesn't exist, create with minimal defaults
-                # Note: GET requests don't have data, so we create with basic defaults
-                user_profile = UserProfile.objects.create(
-                    supabase_uid=lookup_value,
-                    email=f"user-{lookup_value}@cet.ac.in",  # Default email format
-                    full_name="New User",  # Will be updated later
-                    year=1,  # Default to 1st year
-                    branch="",  # Empty branch initially
-                )
-                created = True
+                # If it's a numeric value, try looking up by database ID
+                if lookup_value.isdigit():
+                    try:
+                        user_profile = UserProfile.objects.get(id=int(lookup_value))
+                    except UserProfile.DoesNotExist:
+                        pass
+                
+                # If still not found, return 404 instead of creating a new user
+                if user_profile is None:
+                    return Response({
+                        'error': 'User profile not found',
+                        'detail': f'No user found with identifier: {lookup_value}',
+                        'lookup_value': lookup_value,
+                    }, status=status.HTTP_404_NOT_FOUND)
 
             serializer = self.get_serializer(user_profile)
-            return Response({
-                **serializer.data,
-                "created": created
-            }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
             import traceback, logging
