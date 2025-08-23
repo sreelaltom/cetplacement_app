@@ -43,32 +43,16 @@ const SubjectDetail = () => {
       console.log("Looking for subject:", subjectName);
       console.log("User branch:", userProfile?.branch);
 
-      // Try to fetch the subject from the database
-      const subjectResponse = await apiService.getSubjectByName(
+      // Try to fetch the subject from the database (branch-specific first)
+      let subjectResponse = await apiService.getSubjectByName(
         subjectName,
         userProfile?.branch
       );
-
-      console.log("Subject API response:", subjectResponse);
-      console.log("Response data:", subjectResponse?.data);
-      console.log("Response data type:", typeof subjectResponse?.data);
-      console.log("Response results:", subjectResponse?.data?.results);
-      console.log(
-        "Response results length:",
-        subjectResponse?.data?.results?.length
-      );
-
       let selectedSubject = null;
-
       if (subjectResponse.data) {
-        // Handle both paginated and non-paginated responses
         const subjectsData =
           subjectResponse.data.results || subjectResponse.data;
-
         if (Array.isArray(subjectsData) && subjectsData.length > 0) {
-          console.log("Found subjects:", subjectsData);
-          console.log("First subject:", subjectsData[0]);
-          // If multiple subjects found (common + branch-specific), prioritize branch-specific
           if (userProfile?.branch) {
             const branchSubject = subjectsData.find(
               (s) => s.branch === userProfile.branch
@@ -78,32 +62,31 @@ const SubjectDetail = () => {
           } else {
             selectedSubject = subjectsData[0];
           }
-          console.log("Selected subject:", selectedSubject);
-        } else {
-          console.log("No subjects found in response");
         }
-      } else {
-        console.log("No subjects found in response");
-        console.log("subjectResponse.data:", subjectResponse.data);
-        console.log(
-          "Array.isArray(subjectResponse.data):",
-          Array.isArray(subjectResponse.data)
-        );
       }
-
+      // If not found, try again with just name (to get common subject)
       if (!selectedSubject) {
-        // Create a temporary subject object if not found in DB
-        selectedSubject = {
-          id: `temp_${Date.now()}`,
-          name: subjectName,
-          description: `Study materials and discussions for ${subjectName}`,
-          branch: userProfile?.branch || "Common",
-          is_common: false,
-        };
+        subjectResponse = await apiService.getSubjectByName(subjectName);
+        if (subjectResponse.data) {
+          const subjectsData =
+            subjectResponse.data.results || subjectResponse.data;
+          if (Array.isArray(subjectsData) && subjectsData.length > 0) {
+            selectedSubject =
+              subjectsData.find((s) => s.is_common) || subjectsData[0];
+          }
+        }
       }
-
+      if (!selectedSubject) {
+        setError(
+          "Subject not found in database. Please select a valid subject."
+        );
+        setSubject(null);
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
+      setError(""); // Clear error if valid subject found
       setSubject(selectedSubject);
-
       // Fetch posts for this subject (if it exists in DB)
       if (
         selectedSubject.id &&
@@ -114,12 +97,10 @@ const SubjectDetail = () => {
             subject: selectedSubject.id,
           });
           if (postsResponse.data) {
-            // Handle both paginated and non-paginated responses
             const postsData = postsResponse.data.results || postsResponse.data;
             setPosts(Array.isArray(postsData) ? postsData : []);
           }
         } catch (error) {
-          console.log("No posts found for this subject:", error);
           setPosts([]);
         }
       } else {
@@ -179,10 +160,9 @@ const SubjectDetail = () => {
     console.log("User profile:", userProfile);
     console.log("Form data:", formData);
 
+    // Prevent post creation for temporary subjects
     if (!subject || subject.id.toString().startsWith("temp_")) {
-      setError(
-        "Subject not found in database. Cannot create posts for temporary subjects."
-      );
+      setError("Subject not found in database. Please select a valid subject.");
       console.log("ERROR: Subject is temporary or not found");
       return;
     }
