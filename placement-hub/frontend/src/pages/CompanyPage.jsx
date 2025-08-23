@@ -365,6 +365,7 @@ const CompanyPage = () => {
               alignItems: "center",
             }}
           >
+            {/* Only use <a> for external links, never inside <Link> */}
             {company.website && (
               <a
                 href={company.website}
@@ -513,7 +514,6 @@ const CompanyPage = () => {
                         backgroundColor: theme.colors.background,
                         color: theme.colors.text,
                         fontSize: theme.typography.fontSize.base,
-                        boxSizing: "border-box",
                       }}
                     />
                   </div>
@@ -953,7 +953,7 @@ const CompanyPage = () => {
                   }}
                 >
                   <span>
-                    Posted by {experience.posted_by_username || "Anonymous"} •{" "}
+                    Posted by {experience.posted_by_name || "Anonymous"} •{" "}
                     {experience.created_at && formatDate(experience.created_at)}
                   </span>
                   <div
@@ -966,50 +966,39 @@ const CompanyPage = () => {
                     <button
                       onClick={() => handleVote(experience.id, true)}
                       style={{
-                        background: "none",
+                        background:
+                          experience.user_voted === true
+                            ? theme.colors.success
+                            : "none",
                         border: "none",
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         gap: theme.spacing.xs,
-                        color: theme.colors.textSecondary,
+                        color:
+                          experience.user_voted === true
+                            ? theme.colors.textWhite
+                            : theme.colors.success,
                         fontSize: theme.typography.fontSize.sm,
-                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                        borderRadius: theme.borderRadius.sm,
+                        padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                        borderRadius: theme.borderRadius.md,
                         transition: "all 0.2s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = theme.colors.border;
+                        if (experience.user_voted !== true) {
+                          e.target.style.backgroundColor = theme.colors.success;
+                          e.target.style.color = theme.colors.textWhite;
+                        }
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = "transparent";
+                        if (experience.user_voted !== true) {
+                          e.target.style.backgroundColor = "none";
+                          e.target.style.color = theme.colors.success;
+                        }
                       }}
                     >
-                      👍 {experience.upvotes || 0}
-                    </button>
-                    <button
-                      onClick={() => handleVote(experience.id, false)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: theme.spacing.xs,
-                        color: theme.colors.textSecondary,
-                        fontSize: theme.typography.fontSize.sm,
-                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                        borderRadius: theme.borderRadius.sm,
-                        transition: "all 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = theme.colors.border;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      👎 {experience.downvotes || 0}
+                      {experience.user_voted === true ? "❤️" : "🤍"}{" "}
+                      {experience.upvotes || 0}
                     </button>
                   </div>
                 </div>
