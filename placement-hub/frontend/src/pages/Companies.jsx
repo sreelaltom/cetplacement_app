@@ -24,6 +24,7 @@ const Companies = () => {
   const [newExperience, setNewExperience] = useState({
     company: "",
     position: "",
+    interview_date: "",
     rounds: "",
     questions: "",
     tips: "",
@@ -88,6 +89,7 @@ const Companies = () => {
       setNewExperience({
         company: "",
         position: "",
+        interview_date: "",
         rounds: "",
         questions: "",
         tips: "",
@@ -486,6 +488,40 @@ const Companies = () => {
                         fontWeight: theme.typography.fontWeight.semibold,
                       }}
                     >
+                      Interview Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={newExperience.interview_date}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          interview_date: e.target.value,
+                        })
+                      }
+                      required
+                      style={{
+                        width: "100%",
+                        padding: theme.spacing.md,
+                        border: `1px solid ${theme.colors.border}`,
+                        borderRadius: theme.borderRadius.md,
+                        backgroundColor: theme.colors.background,
+                        color: theme.colors.text,
+                        fontSize: theme.typography.fontSize.base,
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: theme.spacing.sm,
+                        color: theme.colors.text,
+                        fontSize: theme.typography.fontSize.sm,
+                        fontWeight: theme.typography.fontWeight.semibold,
+                      }}
+                    >
                       Difficulty Level
                     </label>
                     <select
@@ -511,7 +547,15 @@ const Companies = () => {
                       <option value={3}>Hard</option>
                     </select>
                   </div>
+                </div>
 
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: theme.spacing.lg,
+                  }}
+                >
                   <div>
                     <label
                       style={{
@@ -746,120 +790,124 @@ const Companies = () => {
               }}
             >
               {filteredCompanies.map((company) => (
-                <Link
-                  key={company.id}
-                  to={`/company/${company.id}`}
-                  style={{
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  <div
+                <div key={company.id}>
+                  <Link
+                    to={`/company/${company.id}`}
                     style={{
-                      backgroundColor: theme.colors.surface,
-                      borderRadius: theme.borderRadius.lg,
-                      padding: theme.spacing.xl,
-                      border: `1px solid ${theme.colors.border}`,
-                      transition: "all 0.2s ease",
-                      cursor: "pointer",
-                      height: "100%",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-4px)";
-                      e.currentTarget.style.boxShadow = `0 8px 25px ${theme.colors.primary}20`;
-                      e.currentTarget.style.borderColor = theme.colors.primary;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "none";
-                      e.currentTarget.style.borderColor = theme.colors.border;
+                      textDecoration: "none",
+                      color: "inherit",
                     }}
                   >
                     <div
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: theme.spacing.lg,
-                        marginBottom: theme.spacing.lg,
+                        backgroundColor: theme.colors.surface,
+                        borderRadius: theme.borderRadius.lg,
+                        padding: theme.spacing.xl,
+                        border: `1px solid ${theme.colors.border}`,
+                        transition: "all 0.2s ease",
+                        cursor: "pointer",
+                        height: "100%",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-4px)";
+                        e.currentTarget.style.boxShadow = `0 8px 25px ${theme.colors.primary}20`;
+                        e.currentTarget.style.borderColor =
+                          theme.colors.primary;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                        e.currentTarget.style.borderColor = theme.colors.border;
                       }}
                     >
-                      <span style={{ fontSize: theme.typography.fontSize.h2 }}>
-                        {getCompanyIcon(company)}
-                      </span>
-                      <div style={{ flex: 1 }}>
-                        <h3
-                          style={{
-                            margin: `0 0 ${theme.spacing.xs} 0`,
-                            color: theme.colors.text,
-                            fontSize: theme.typography.fontSize.xl,
-                            fontWeight: theme.typography.fontWeight.bold,
-                          }}
-                        >
-                          {company.name}
-                        </h3>
-                        {(company.tier || company.salary_range) && (
-                          <p
-                            style={{
-                              margin: 0,
-                              color: theme.colors.textSecondary,
-                              fontSize: theme.typography.fontSize.sm,
-                              fontWeight: theme.typography.fontWeight.medium,
-                            }}
-                          >
-                            {company.tier && company.salary_range
-                              ? `${company.tier
-                                  .replace("_", " ")
-                                  .replace(/\b\w/g, (l) =>
-                                    l.toUpperCase()
-                                  )} • ${company.salary_range}`
-                              : company.tier
-                                  ?.replace("_", " ")
-                                  .replace(/\b\w/g, (l) => l.toUpperCase()) ||
-                                company.salary_range}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {company.website && (
                       <div
                         style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: theme.spacing.lg,
                           marginBottom: theme.spacing.lg,
                         }}
                       >
-                        <a
-                          href={company.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: theme.colors.primary,
-                            textDecoration: "none",
-                            fontSize: theme.typography.fontSize.sm,
-                            fontWeight: theme.typography.fontWeight.medium,
-                          }}
+                        <span
+                          style={{ fontSize: theme.typography.fontSize.h2 }}
                         >
-                          🌐 Visit Website
-                        </a>
+                          {getCompanyIcon(company)}
+                        </span>
+                        <div style={{ flex: 1 }}>
+                          <h3
+                            style={{
+                              margin: `0 0 ${theme.spacing.xs} 0`,
+                              color: theme.colors.text,
+                              fontSize: theme.typography.fontSize.xl,
+                              fontWeight: theme.typography.fontWeight.bold,
+                            }}
+                          >
+                            {company.name}
+                          </h3>
+                          {(company.tier || company.salary_range) && (
+                            <p
+                              style={{
+                                margin: 0,
+                                color: theme.colors.textSecondary,
+                                fontSize: theme.typography.fontSize.sm,
+                                fontWeight: theme.typography.fontWeight.medium,
+                              }}
+                            >
+                              {company.tier && company.salary_range
+                                ? `${company.tier
+                                    .replace("_", " ")
+                                    .replace(/\b\w/g, (l) =>
+                                      l.toUpperCase()
+                                    )} • ${company.salary_range}`
+                                : company.tier
+                                    ?.replace("_", " ")
+                                    .replace(/\b\w/g, (l) => l.toUpperCase()) ||
+                                  company.salary_range}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    )}
 
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontSize: theme.typography.fontSize.sm,
+                          color: theme.colors.textSecondary,
+                          marginTop: "auto",
+                          paddingTop: theme.spacing.md,
+                          borderTop: `1px solid ${theme.colors.border}`,
+                        }}
+                      >
+                        <span>Click to view details</span>
+                        <span>→</span>
+                      </div>
+                    </div>
+                  </Link>
+                  {company.website && (
                     <div
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: theme.typography.fontSize.sm,
-                        color: theme.colors.textSecondary,
-                        marginTop: "auto",
-                        paddingTop: theme.spacing.md,
-                        borderTop: `1px solid ${theme.colors.border}`,
+                        marginBottom: theme.spacing.lg,
+                        marginTop: theme.spacing.sm,
                       }}
                     >
-                      <span>Click to view details</span>
-                      <span>→</span>
+                      <a
+                        href={company.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: theme.colors.primary,
+                          textDecoration: "none",
+                          fontSize: theme.typography.fontSize.sm,
+                          fontWeight: theme.typography.fontWeight.medium,
+                        }}
+                      >
+                        🌐 Visit Website
+                      </a>
                     </div>
-                  </div>
-                </Link>
+                  )}
+                </div>
               ))}
             </div>
           )
