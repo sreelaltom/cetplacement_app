@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import apiService from "../services/api";
 import { theme } from "../styles/theme";
+import { useAuth } from "../contexts/AuthContext";
 
 // Add CSS animation for loading spinner
 const style = document.createElement("style");
@@ -20,14 +21,17 @@ const CompanyPage = () => {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPostForm, setShowPostForm] = useState(false);
+  // ...existing code...
   const [newExperience, setNewExperience] = useState({
     position: "",
+    interview_date: "",
     rounds: "",
     questions: "",
     tips: "",
     difficulty_level: 2,
     result: "pending",
   });
+  const { userProfile } = useAuth();
 
   useEffect(() => {
     fetchCompanyData();
@@ -60,14 +64,20 @@ const CompanyPage = () => {
   const handlePostExperience = async (e) => {
     e.preventDefault();
     try {
+      if (!newExperience.interview_date) {
+        alert("Interview date is required.");
+        return;
+      }
       const experienceData = {
         ...newExperience,
         company: id,
+        posted_by: userProfile?.id,
       };
       await apiService.createInterviewExperience(experienceData);
       setShowPostForm(false);
       setNewExperience({
         position: "",
+        interview_date: "",
         rounds: "",
         questions: "",
         tips: "",
@@ -528,16 +538,18 @@ const CompanyPage = () => {
                         fontWeight: theme.typography.fontWeight.semibold,
                       }}
                     >
-                      Difficulty Level
+                      Interview Date *
                     </label>
-                    <select
-                      value={newExperience.difficulty_level}
+                    <input
+                      type="date"
+                      value={newExperience.interview_date}
                       onChange={(e) =>
                         setNewExperience({
                           ...newExperience,
-                          difficulty_level: parseInt(e.target.value),
+                          interview_date: e.target.value,
                         })
                       }
+                      required
                       style={{
                         width: "100%",
                         padding: theme.spacing.md,
@@ -547,12 +559,44 @@ const CompanyPage = () => {
                         color: theme.colors.text,
                         fontSize: theme.typography.fontSize.base,
                       }}
-                    >
-                      <option value={1}>Easy</option>
-                      <option value={2}>Medium</option>
-                      <option value={3}>Hard</option>
-                    </select>
+                    />
                   </div>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: theme.spacing.sm,
+                      color: theme.colors.text,
+                      fontSize: theme.typography.fontSize.sm,
+                      fontWeight: theme.typography.fontWeight.semibold,
+                    }}
+                  >
+                    Difficulty Level
+                  </label>
+                  <select
+                    value={newExperience.difficulty_level}
+                    onChange={(e) =>
+                      setNewExperience({
+                        ...newExperience,
+                        difficulty_level: parseInt(e.target.value),
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: theme.spacing.md,
+                      border: `1px solid ${theme.colors.border}`,
+                      borderRadius: theme.borderRadius.md,
+                      backgroundColor: theme.colors.background,
+                      color: theme.colors.text,
+                      fontSize: theme.typography.fontSize.base,
+                    }}
+                  >
+                    <option value={1}>Easy</option>
+                    <option value={2}>Medium</option>
+                    <option value={3}>Hard</option>
+                  </select>
                 </div>
 
                 <div>

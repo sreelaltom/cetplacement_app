@@ -105,7 +105,7 @@ class InterviewExperienceSerializer(serializers.ModelSerializer):
     def get_user_voted(self, obj):
         """Check if current user has voted on this experience"""
         request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
+        if request and hasattr(request, 'user') and hasattr(request.user, 'supabase_uid'):
             try:
                 user_profile = UserProfile.objects.get(supabase_uid=request.user.supabase_uid)
                 vote = obj.experiencevote_set.filter(user=user_profile).first()
