@@ -834,7 +834,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 // Show actual companies
-                companies.map((company) => (
+                companies.slice(0, 6).map((company) => (
                   <Link
                     key={company.id}
                     to={`/company/${company.id}`}

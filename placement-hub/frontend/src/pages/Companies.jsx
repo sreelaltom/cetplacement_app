@@ -14,6 +14,31 @@ style.textContent = `
 document.head.appendChild(style);
 
 const Companies = () => {
+  // Fetch interview experiences and update state
+  const fetchInterviewExperiences = async () => {
+    try {
+      const experiencesResponse = await apiService.getInterviewExperiences();
+      if (experiencesResponse.data) {
+        const experiencesData =
+          experiencesResponse.data.results || experiencesResponse.data;
+        setInterviewExperiences(
+          Array.isArray(experiencesData) ? experiencesData : []
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching interview experiences:", error);
+    }
+  };
+
+  // Like handler for experiences
+  const handleLikeExperience = async (experienceId) => {
+    try {
+      await apiService.voteOnExperience(experienceId, true);
+      fetchInterviewExperiences(); // Refresh list after voting
+    } catch (error) {
+      console.error("Error liking experience:", error);
+    }
+  };
   const [companies, setCompanies] = useState([]);
   const [interviewExperiences, setInterviewExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,53 +58,42 @@ const Companies = () => {
   });
 
   useEffect(() => {
-    fetchCompanies();
-    fetchInterviewExperiences();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const companiesResponse = await apiService.getCompanies();
+        setCompanies(companiesResponse.data || []);
+
+        const experiencesResponse = await apiService.getInterviewExperiences();
+        if (experiencesResponse.data) {
+          // Handle both paginated and non-paginated responses
+          const experiencesData =
+            experiencesResponse.data.results || experiencesResponse.data;
+          setInterviewExperiences(
+            Array.isArray(experiencesData) ? experiencesData : []
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching companies or experiences:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
-    // Filter companies based on search term
-    const filtered = companies.filter(
-      (company) =>
-        company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (company.tier &&
-          company.tier.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (company.salary_range &&
-          company.salary_range.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-    setFilteredCompanies(filtered);
+    if (searchTerm === "") {
+      setFilteredCompanies(companies);
+    } else {
+      setFilteredCompanies(
+        companies.filter((company) =>
+          company.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
   }, [searchTerm, companies]);
-
-  const fetchCompanies = async () => {
-    setLoading(true);
-    try {
-      const response = await apiService.getCompanies();
-      if (response.data) {
-        // Handle both paginated and non-paginated responses
-        const companiesData = response.data.results || response.data;
-        setCompanies(Array.isArray(companiesData) ? companiesData : []);
-      }
-    } catch (error) {
-      console.error("Error fetching companies:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchInterviewExperiences = async () => {
-    try {
-      const response = await apiService.getInterviewExperiences();
-      if (response.data) {
-        // Handle both paginated and non-paginated responses
-        const experiencesData = response.data.results || response.data;
-        setInterviewExperiences(
-          Array.isArray(experiencesData) ? experiencesData : []
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching interview experiences:", error);
-    }
-  };
 
   const handlePostExperience = async (e) => {
     e.preventDefault();
@@ -167,38 +181,16 @@ const Companies = () => {
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          padding: theme.spacing.md,
-          backgroundColor: theme.colors.background,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <div
-            style={{
-              width: "60px",
-              height: "60px",
-              border: `4px solid ${theme.colors.border}`,
-              borderTop: `4px solid ${theme.colors.primary}`,
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-              margin: `0 auto ${theme.spacing.lg}`,
-            }}
-          ></div>
-          <p
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.medium,
-            }}
-          >
-            Loading companies...
-          </p>
-        </div>
+      <div style={{ textAlign: "center", padding: theme.spacing.xxl }}>
+        <p
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: theme.typography.fontSize.lg,
+            fontWeight: theme.typography.fontWeight.medium,
+          }}
+        >
+          Loading companies...
+        </p>
       </div>
     );
   }
@@ -748,7 +740,6 @@ const Companies = () => {
 
         {/* Content based on active tab */}
         {activeTab === "companies" ? (
-          // Companies Grid
           filteredCompanies.length === 0 ? (
             <div
               style={{
@@ -793,10 +784,7 @@ const Companies = () => {
                 <div key={company.id}>
                   <Link
                     to={`/company/${company.id}`}
-                    style={{
-                      textDecoration: "none",
-                      color: "inherit",
-                    }}
+                    style={{ textDecoration: "none", color: "inherit" }}
                   >
                     <div
                       style={{
@@ -867,7 +855,6 @@ const Companies = () => {
                           )}
                         </div>
                       </div>
-
                       <div
                         style={{
                           display: "flex",
@@ -911,8 +898,7 @@ const Companies = () => {
               ))}
             </div>
           )
-        ) : // Interview Experiences List
-        interviewExperiences.length === 0 ? (
+        ) : interviewExperiences.length === 0 ? (
           <div
             style={{
               textAlign: "center",
@@ -1106,7 +1092,7 @@ const Companies = () => {
                   )}
                 </div>
 
-                {/* Footer */}
+                {/* Footer - Like button styled like CompanyPage */}
                 <div
                   style={{
                     marginTop: theme.spacing.lg,
@@ -1120,7 +1106,7 @@ const Companies = () => {
                   }}
                 >
                   <span>
-                    Posted by {experience.posted_by_username || "Anonymous"} •{" "}
+                    Posted by {experience.posted_by_name || "Anonymous"} •{" "}
                     {experience.created_at && formatDate(experience.created_at)}
                   </span>
                   <div
@@ -1130,8 +1116,43 @@ const Companies = () => {
                       gap: theme.spacing.md,
                     }}
                   >
-                    <span>👍 {experience.upvotes || 0}</span>
-                    <span>👎 {experience.downvotes || 0}</span>
+                    <button
+                      onClick={() => handleLikeExperience(experience.id)}
+                      style={{
+                        backgroundColor: experience.user_voted
+                          ? theme.colors.error
+                          : "transparent",
+                        border: "none",
+                        cursor: experience.user_voted ? "default" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: theme.spacing.xs,
+                        color: experience.user_voted
+                          ? theme.colors.textWhite
+                          : theme.colors.error,
+                        fontSize: theme.typography.fontSize.sm,
+                        padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                        borderRadius: theme.borderRadius.md,
+                        transition: "all 0.2s ease",
+                      }}
+                      disabled={experience.user_voted}
+                      title={experience.user_voted ? "You liked this" : "Like"}
+                      onMouseEnter={(e) => {
+                        if (!experience.user_voted) {
+                          e.target.style.backgroundColor = theme.colors.error;
+                          e.target.style.color = theme.colors.textWhite;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!experience.user_voted) {
+                          e.target.style.backgroundColor = "none";
+                          e.target.style.color = theme.colors.error;
+                        }
+                      }}
+                    >
+                      {experience.user_voted ? "❤️" : "🤍"}{" "}
+                      {experience.upvotes || 0}
+                    </button>
                   </div>
                 </div>
               </div>

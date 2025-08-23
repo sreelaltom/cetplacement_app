@@ -96,7 +96,11 @@ const Profile = () => {
       });
       if (response.data) {
         const experiences = response.data.results || response.data;
-        setUserExperiences(Array.isArray(experiences) ? experiences : []);
+        setUserExperiences(
+          Array.isArray(experiences)
+            ? experiences.filter((exp) => exp.posted_by === userProfile.id)
+            : []
+        );
       }
     } catch (error) {
       setUserExperiences([]);
