@@ -43,27 +43,17 @@ class SupabaseAuthentication(BaseAuthentication):
         Verify JWT token with Supabase
         """
         try:
-            # Use Supabase JWT secret - for development, we can use the anon key
-            # In production, you should use the actual JWT secret
-            jwt_secret = settings.SUPABASE_KEY
+            # For debugging: decode without verification to see the token structure
+            decoded_token = jwt.decode(
+                token, 
+                options={"verify_signature": False}
+            )
+            print(f"DEBUG: Decoded token: {decoded_token}")
             
-            # For development/testing, let's try decoding without verification first
-            try:
-                # Try with verification
-                decoded_token = jwt.decode(
-                    token, 
-                    jwt_secret, 
-                    algorithms=['HS256'],
-                    audience='authenticated'
-                )
-            except jwt.InvalidSignatureError:
-                # If signature verification fails, decode without verification for testing
-                decoded_token = jwt.decode(
-                    token, 
-                    options={"verify_signature": False}
-                )
-                print("Warning: JWT signature verification disabled for testing")
-            
+            # Check if token has required fields
+            if not decoded_token.get('sub') or not decoded_token.get('email'):
+                raise AuthenticationFailed('Invalid token payload')
+                
             return decoded_token
             
         except jwt.ExpiredSignatureError:

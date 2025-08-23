@@ -41,13 +41,14 @@ class SubjectSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     """Serializer for posts"""
     posted_by_name = serializers.CharField(source='posted_by.full_name', read_only=True)
+    posted_by_uid = serializers.CharField(source='posted_by.supabase_uid', read_only=True)
     subject_name = serializers.CharField(source='subject.name', read_only=True)
     net_score = serializers.ReadOnlyField()
     user_vote = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
-        fields = ['id', 'subject', 'subject_name', 'posted_by', 'posted_by_name', 
+        fields = ['id', 'subject', 'subject_name', 'posted_by', 'posted_by_name', 'posted_by_uid',
                  'post_type', 'topic', 'notes_link', 'video_link', 'focus_points',
                  'upvotes', 'downvotes', 'net_score', 'user_vote', 
                  'created_at', 'updated_at']
@@ -57,13 +58,24 @@ class PostSerializer(serializers.ModelSerializer):
     def get_user_vote(self, obj):
         """Get current user's vote on this post"""
         request = self.context.get('request')
+        print(f"DEBUG: get_user_vote called for post {obj.id}")
+        print(f"DEBUG: request exists: {request is not None}")
+        if request:
+            print(f"DEBUG: request.user: {request.user}")
+            print(f"DEBUG: request.user type: {type(request.user)}")
+            print(f"DEBUG: hasattr supabase_uid: {hasattr(request.user, 'supabase_uid')}")
+        
         if request and hasattr(request, 'user') and hasattr(request.user, 'supabase_uid'):
             try:
                 from .models import PostVote
                 vote = PostVote.objects.filter(user=request.user, post=obj).first()
-                return vote.vote if vote else None
-            except Exception:
+                vote_value = vote.vote if vote else None
+                print(f"DEBUG: Found vote: {vote_value}")
+                return vote_value
+            except Exception as e:
+                print(f"DEBUG: Exception in get_user_vote: {e}")
                 return None
+        print(f"DEBUG: No authenticated user, returning None")
         return None
 
 

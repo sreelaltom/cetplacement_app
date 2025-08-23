@@ -212,7 +212,19 @@ class PostViewSet(viewsets.ModelViewSet):
         if subject_id is not None:
             queryset = queryset.filter(subject_id=subject_id)
         if user_id is not None:
-            queryset = queryset.filter(posted_by_id=user_id)
+            # Check if user_id is a Supabase UID (string) or database ID (integer)
+            try:
+                # Try to convert to integer (database ID)
+                user_db_id = int(user_id)
+                queryset = queryset.filter(posted_by_id=user_db_id)
+            except ValueError:
+                # It's a Supabase UID, find the corresponding UserProfile
+                try:
+                    user_profile = UserProfile.objects.get(supabase_uid=user_id)
+                    queryset = queryset.filter(posted_by_id=user_profile.id)
+                except UserProfile.DoesNotExist:
+                    # User doesn't exist, return empty queryset
+                    queryset = queryset.none()
         if search is not None:
             queryset = queryset.filter(
                 Q(topic__icontains=search) | 
