@@ -32,7 +32,11 @@ const UserProfile = () => {
         setLoading(true);
 
         // If it's the current user, redirect to profile page
-        if (currentUserProfile && currentUserProfile.id.toString() === userId) {
+        if (
+          currentUserProfile &&
+          (currentUserProfile.id.toString() === userId ||
+            currentUserProfile.supabase_uid === userId)
+        ) {
           navigate("/profile");
           return;
         }

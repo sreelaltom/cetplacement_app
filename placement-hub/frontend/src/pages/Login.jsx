@@ -713,6 +713,7 @@ const Login = () => {
               </svg>
               Company-wise interview experiences
             </li>
+
             <li style={{ display: "flex", alignItems: "center" }}>
               <svg
                 style={{
@@ -733,29 +734,7 @@ const Login = () => {
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              Daily coding and aptitude challenges
-            </li>
-            <li style={{ display: "flex", alignItems: "center" }}>
-              <svg
-                style={{
-                  height: "1rem",
-                  width: "1rem",
-                  color: "#10b981",
-                  marginRight: "0.5rem",
-                  flexShrink: 0,
-                }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              Community leaderboard and points system
+              Notes posted by CET students
             </li>
           </ul>
         </div>

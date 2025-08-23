@@ -53,7 +53,10 @@ const PostCard = ({
   const handleAuthorClick = (e) => {
     e.stopPropagation(); // Prevent card navigation when clicking author name
     e.preventDefault(); // Prevent any default behavior
-    if (post.posted_by) {
+    if (post.posted_by_uid) {
+      navigate(`/user/${post.posted_by_uid}`);
+    } else if (post.posted_by) {
+      // Fallback to database ID if Supabase UID is not available
       navigate(`/user/${post.posted_by}`);
     }
   };

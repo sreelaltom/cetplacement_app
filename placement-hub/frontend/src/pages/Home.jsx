@@ -243,52 +243,6 @@ const Home = () => {
             </div>
 
             {/* Feature 3 */}
-            <div
-              style={{
-                backgroundColor: "white",
-                padding: "2rem",
-                borderRadius: "1rem",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  backgroundColor: "#dbeafe",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 1.5rem",
-                  fontSize: "2rem",
-                }}
-              >
-                🏆
-              </div>
-              <h3
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "bold",
-                  marginBottom: "1rem",
-                  color: "#1f2937",
-                  margin: "0 0 1rem 0",
-                }}
-              >
-                Leaderboard & Gamification
-              </h3>
-              <p
-                style={{
-                  color: "#6b7280",
-                  lineHeight: 1.6,
-                  margin: 0,
-                }}
-              >
-                Track your progress, earn points for contributions, and compete
-                with peers in a fun, engaging way.
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -327,8 +281,9 @@ const Home = () => {
               margin: "0 0 2rem 0",
             }}
           >
-            Join thousands of CET students who are already using our platform to
-            ace their placements.
+            Join the platform to ace their placements.Learn from the tested
+            resources and strategies used by our CET Friends to maximize your
+            chances of success.
           </p>
           <Link
             to="/login"

@@ -34,16 +34,21 @@ apiClient.interceptors.request.use(
       // Check if this is a voting endpoint
       const isVoteEndpoint = config.url?.includes("/vote/");
 
+      // Check if this is a posts endpoint (to get user vote information)
+      const isPostsEndpoint = config.url?.includes("/posts/");
+
       // Auth is required for:
       // 1. Specific authenticated endpoints (like /users/me)
       // 2. Any voting endpoints
       // 3. Write operations (creating/updating posts, experiences, etc.)
+      // 4. Posts endpoints (to get user vote information)
       const requiresAuth =
         authRequiredEndpoints.some((endpoint) =>
           config.url?.includes(endpoint)
         ) ||
         isVoteEndpoint ||
-        isWriteOperation;
+        isWriteOperation ||
+        isPostsEndpoint;
 
       if (requiresAuth) {
         // Get the current session from Supabase
@@ -93,11 +98,13 @@ apiClient.interceptors.response.use(
         method
       );
       const isVoteEndpoint = url.includes("/vote/");
+      const isPostsEndpoint = url.includes("/posts/");
 
       const shouldRequireAuth =
         authRequiredEndpoints.some((endpoint) => url.includes(endpoint)) ||
         isVoteEndpoint ||
-        isWriteOperation;
+        isWriteOperation ||
+        isPostsEndpoint;
 
       if (shouldRequireAuth) {
         console.log("Authentication required for protected endpoint");

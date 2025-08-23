@@ -114,11 +114,26 @@ export const authService = {
   async signOut() {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        // Log the error but don't throw it - we still want to clear local state
+        console.warn("Sign out error (continuing anyway):", error);
+      }
       return { error: null };
     } catch (error) {
-      console.error("Sign out error:", error);
-      return { error };
+      // Handle cases where the session is already invalid or expired
+      console.warn("Sign out error (continuing anyway):", error);
+
+      // Force clear the local session even if the server request fails
+      try {
+        // Clear any stored tokens/session data locally
+        await supabase.auth.signOut({ scope: "local" });
+      } catch (localError) {
+        console.warn("Local sign out also failed:", localError);
+      }
+
+      // Return success even if server sign-out failed
+      // This ensures the UI can still update properly
+      return { error: null };
     }
   },
 

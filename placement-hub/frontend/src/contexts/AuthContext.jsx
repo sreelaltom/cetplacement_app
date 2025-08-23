@@ -47,7 +47,11 @@ export const AuthProvider = ({ children }) => {
           setLastProcessedSession(session.access_token);
           // Validate email domain
           if (!authService.isValidEmail(session.user.email)) {
-            await authService.signOut();
+            try {
+              await authService.signOut();
+            } catch (error) {
+              console.warn("Sign out error during email validation:", error);
+            }
             setUser(null);
             alert("Only @cet.ac.in email addresses are allowed.");
             setLoading(false);
@@ -92,7 +96,11 @@ export const AuthProvider = ({ children }) => {
         setLastProcessedSession(session.access_token);
         // Validate email domain
         if (!authService.isValidEmail(session.user.email)) {
-          await authService.signOut();
+          try {
+            await authService.signOut();
+          } catch (error) {
+            console.warn("Sign out error during email validation:", error);
+          }
           setUser(null);
           setUserProfile(null);
           alert("Only @cet.ac.in email addresses are allowed.");
@@ -309,13 +317,23 @@ export const AuthProvider = ({ children }) => {
     try {
       const { error } = await authService.signOut();
       if (error) {
-        console.error("Sign out error:", error);
-        return { error };
+        console.warn("Sign out error (continuing anyway):", error);
+        // Don't return error - we want to clear local state regardless
       }
+
+      // Clear local state regardless of server response
+      setUser(null);
+      setUserProfile(null);
+
       return { error: null };
     } catch (error) {
-      console.error("Sign out error:", error);
-      return { error };
+      console.warn("Sign out error (continuing anyway):", error);
+
+      // Clear local state even if there was an error
+      setUser(null);
+      setUserProfile(null);
+
+      return { error: null };
     } finally {
       setLoading(false);
     }

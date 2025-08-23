@@ -98,15 +98,17 @@ const Profile = () => {
   ];
 
   const fetchUserPosts = async () => {
-    if (!userProfile?.id) {
-      console.log("No userProfile.id available:", userProfile);
+    if (!userProfile?.supabase_uid) {
+      console.log("No userProfile.supabase_uid available:", userProfile);
       return;
     }
 
-    console.log("Fetching posts for user ID:", userProfile.id);
+    console.log("Fetching posts for user UID:", userProfile.supabase_uid);
     setPostsLoading(true);
     try {
-      const response = await apiService.getPosts({ user: userProfile.id });
+      const response = await apiService.getPosts({
+        user: userProfile.supabase_uid,
+      });
       console.log("Posts API response:", response);
       if (response.data) {
         const posts = response.data.results || response.data;
