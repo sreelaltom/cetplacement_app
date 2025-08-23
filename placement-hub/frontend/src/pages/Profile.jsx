@@ -84,7 +84,26 @@ const Profile = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [userPosts, setUserPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile"); // "profile" or "posts"
+  const [userExperiences, setUserExperiences] = useState([]);
+  const [experiencesLoading, setExperiencesLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile"); // "profile", "posts", "experiences"
+  const fetchUserExperiences = async () => {
+    if (!userProfile?.id) return;
+    setExperiencesLoading(true);
+    try {
+      const response = await apiService.getInterviewExperiences({
+        posted_by: userProfile.id,
+      });
+      if (response.data) {
+        const experiences = response.data.results || response.data;
+        setUserExperiences(Array.isArray(experiences) ? experiences : []);
+      }
+    } catch (error) {
+      setUserExperiences([]);
+    } finally {
+      setExperiencesLoading(false);
+    }
+  };
 
   const branches = [
     "Computer Science Engineering",
@@ -156,12 +175,41 @@ const Profile = () => {
         github_url: userProfile.github_url || "",
       });
 
-      // Fetch user posts
+      // Fetch user posts and experiences
       fetchUserPosts();
+      fetchUserExperiences();
     } else {
       console.log("No userProfile available yet");
     }
   }, [userProfile]);
+
+  const handleDeleteExperience = async (experienceId) => {
+    if (!window.confirm("Are you sure you want to delete this experience?"))
+      return;
+    try {
+      const response = await apiService.deleteInterviewExperience(experienceId);
+      if (response.error) {
+        setMessage({
+          type: "error",
+          text: "Failed to delete experience. Please try again.",
+        });
+      } else {
+        setUserExperiences((prev) =>
+          prev.filter((exp) => exp.id !== experienceId)
+        );
+        setMessage({
+          type: "success",
+          text: "Experience deleted successfully!",
+        });
+        setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      }
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "An error occurred while deleting the experience.",
+      });
+    }
+  };
 
   const handleDeletePost = async (postId) => {
     console.log("Attempting to delete post:", postId);
@@ -427,7 +475,369 @@ const Profile = () => {
           >
             📝 My Posts ({userPosts.length})
           </button>
+          <button
+            onClick={() => setActiveTab("experiences")}
+            style={{
+              flex: 1,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+              borderRadius: theme.borderRadius.lg,
+              border: "none",
+              backgroundColor:
+                activeTab === "experiences"
+                  ? theme.colors.primary
+                  : "transparent",
+              color:
+                activeTab === "experiences"
+                  ? theme.colors.textWhite
+                  : theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.medium,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            💬 My Experiences ({userExperiences.length})
+          </button>
         </div>
+        {/* Experiences Section */}
+        {activeTab === "experiences" && (
+          <div
+            style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.borderRadius.xl,
+              boxShadow: theme.shadows.lg,
+              border: `1px solid ${theme.colors.border}`,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: theme.spacing.xl,
+                borderBottom: `1px solid ${theme.colors.border}`,
+                background: `linear-gradient(135deg, ${theme.colors.primary}15 0%, ${theme.colors.primaryHover}10 100%)`,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: theme.typography.fontSize.xl,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.textPrimary,
+                  margin: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: theme.spacing.sm,
+                }}
+              >
+                💬 My Experiences
+                <span
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    color: theme.colors.textWhite,
+                    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                    borderRadius: theme.borderRadius.full,
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.medium,
+                  }}
+                >
+                  {userExperiences.length}
+                </span>
+              </h3>
+            </div>
+            <div style={{ padding: theme.spacing.xl }}>
+              {experiencesLoading ? (
+                <div style={{ textAlign: "center", padding: theme.spacing.xl }}>
+                  <div
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      border: `4px solid ${theme.colors.border}`,
+                      borderTop: `4px solid ${theme.colors.primary}`,
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                      margin: "0 auto",
+                    }}
+                  />
+                  <p
+                    style={{
+                      marginTop: theme.spacing.md,
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.typography.fontSize.md,
+                    }}
+                  >
+                    Loading your experiences...
+                  </p>
+                </div>
+              ) : userExperiences.length === 0 ? (
+                <div style={{ textAlign: "center", padding: theme.spacing.xl }}>
+                  <div
+                    style={{
+                      fontSize: "4rem",
+                      marginBottom: theme.spacing.md,
+                    }}
+                  >
+                    💬
+                  </div>
+                  <h4
+                    style={{
+                      fontSize: theme.typography.fontSize.lg,
+                      fontWeight: theme.typography.fontWeight.semibold,
+                      color: theme.colors.textPrimary,
+                      margin: `0 0 ${theme.spacing.sm} 0`,
+                    }}
+                  >
+                    No Experiences Yet
+                  </h4>
+                  <p
+                    style={{
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.typography.fontSize.md,
+                      margin: 0,
+                    }}
+                  >
+                    You haven't shared any interview experiences yet.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: theme.spacing.lg,
+                  }}
+                >
+                  {userExperiences.map((experience) => (
+                    <div
+                      key={experience.id}
+                      style={{
+                        backgroundColor: theme.colors.surface,
+                        borderRadius: theme.borderRadius.lg,
+                        padding: theme.spacing.xl,
+                        border: `1px solid ${theme.colors.border}`,
+                      }}
+                    >
+                      {/* Header */}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          marginBottom: theme.spacing.lg,
+                          flexWrap: "wrap",
+                          gap: theme.spacing.md,
+                        }}
+                      >
+                        <div>
+                          <h3
+                            style={{
+                              margin: `0 0 ${theme.spacing.xs} 0`,
+                              color: theme.colors.text,
+                              fontSize: theme.typography.fontSize.xl,
+                              fontWeight: theme.typography.fontWeight.bold,
+                            }}
+                          >
+                            {experience.position}
+                          </h3>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: theme.colors.textSecondary,
+                              fontSize: theme.typography.fontSize.sm,
+                            }}
+                          >
+                            {experience.interview_date &&
+                              new Date(
+                                experience.interview_date
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                          </p>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: theme.spacing.md,
+                            alignItems: "center",
+                          }}
+                        >
+                          <span
+                            style={{
+                              padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                              borderRadius: theme.borderRadius.md,
+                              backgroundColor:
+                                experience.difficulty_level === 1
+                                  ? "#22c55e"
+                                  : experience.difficulty_level === 2
+                                  ? "#f59e0b"
+                                  : experience.difficulty_level === 3
+                                  ? "#ef4444"
+                                  : theme.colors.textSecondary,
+                              color: "white",
+                              fontSize: theme.typography.fontSize.sm,
+                              fontWeight: theme.typography.fontWeight.semibold,
+                            }}
+                          >
+                            {experience.difficulty_level === 1
+                              ? "Easy"
+                              : experience.difficulty_level === 2
+                              ? "Medium"
+                              : experience.difficulty_level === 3
+                              ? "Hard"
+                              : "Unknown"}
+                          </span>
+                          <span
+                            style={{
+                              padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                              borderRadius: theme.borderRadius.md,
+                              backgroundColor:
+                                experience.result === "selected"
+                                  ? "#22c55e"
+                                  : experience.result === "rejected"
+                                  ? "#ef4444"
+                                  : experience.result === "pending"
+                                  ? "#f59e0b"
+                                  : theme.colors.textSecondary,
+                              color: "white",
+                              fontSize: theme.typography.fontSize.sm,
+                              fontWeight: theme.typography.fontWeight.semibold,
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {experience.result}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Content */}
+                      <div style={{ display: "grid", gap: theme.spacing.lg }}>
+                        {experience.rounds && (
+                          <div>
+                            <h4
+                              style={{
+                                margin: `0 0 ${theme.spacing.sm} 0`,
+                                color: theme.colors.text,
+                                fontSize: theme.typography.fontSize.lg,
+                                fontWeight:
+                                  theme.typography.fontWeight.semibold,
+                              }}
+                            >
+                              📋 Interview Rounds
+                            </h4>
+                            <p
+                              style={{
+                                margin: 0,
+                                color: theme.colors.text,
+                                fontSize: theme.typography.fontSize.base,
+                                lineHeight: "1.6",
+                                whiteSpace: "pre-line",
+                              }}
+                            >
+                              {experience.rounds}
+                            </p>
+                          </div>
+                        )}
+                        {experience.questions && (
+                          <div>
+                            <h4
+                              style={{
+                                margin: `0 0 ${theme.spacing.sm} 0`,
+                                color: theme.colors.text,
+                                fontSize: theme.typography.fontSize.lg,
+                                fontWeight:
+                                  theme.typography.fontWeight.semibold,
+                              }}
+                            >
+                              ❓ Questions Asked
+                            </h4>
+                            <p
+                              style={{
+                                margin: 0,
+                                color: theme.colors.text,
+                                fontSize: theme.typography.fontSize.base,
+                                lineHeight: "1.6",
+                                whiteSpace: "pre-line",
+                              }}
+                            >
+                              {experience.questions}
+                            </p>
+                          </div>
+                        )}
+                        {experience.tips && (
+                          <div>
+                            <h4
+                              style={{
+                                margin: `0 0 ${theme.spacing.sm} 0`,
+                                color: theme.colors.text,
+                                fontSize: theme.typography.fontSize.lg,
+                                fontWeight:
+                                  theme.typography.fontWeight.semibold,
+                              }}
+                            >
+                              💡 Tips & Advice
+                            </h4>
+                            <p
+                              style={{
+                                margin: 0,
+                                color: theme.colors.text,
+                                fontSize: theme.typography.fontSize.base,
+                                lineHeight: "1.6",
+                                whiteSpace: "pre-line",
+                              }}
+                            >
+                              {experience.tips}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {/* Footer with delete */}
+                      <div
+                        style={{
+                          marginTop: theme.spacing.lg,
+                          paddingTop: theme.spacing.md,
+                          borderTop: `1px solid ${theme.colors.border}`,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontSize: theme.typography.fontSize.sm,
+                          color: theme.colors.textSecondary,
+                        }}
+                      >
+                        <span>
+                          Posted on{" "}
+                          {experience.created_at &&
+                            new Date(experience.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteExperience(experience.id)}
+                          style={{
+                            backgroundColor: theme.colors.error,
+                            color: theme.colors.textWhite,
+                            border: "none",
+                            borderRadius: theme.borderRadius.md,
+                            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                            fontSize: theme.typography.fontSize.sm,
+                            fontWeight: theme.typography.fontWeight.semibold,
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Message Display */}
         {message.text && (
