@@ -39,8 +39,10 @@ const ProfileSetup = () => {
     try {
       setBranchesLoading(true);
       const { data, error } = await apiService.getBranches();
-      if (data && data.results) {
-        setBranches(data.results);
+      if (data) {
+        // Handle both paginated and non-paginated responses
+        const branchesData = data.results || data;
+        setBranches(Array.isArray(branchesData) ? branchesData : []);
       } else if (error) {
         console.error("Error fetching branches:", error);
         // Fallback to hardcoded branches if API fails

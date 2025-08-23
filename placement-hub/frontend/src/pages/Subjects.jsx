@@ -54,8 +54,10 @@ const Subjects = () => {
     setLoading(true);
     try {
       const response = await apiService.getSubjects();
-      if (response.data && response.data.results) {
-        setSubjects(response.data.results);
+      if (response.data) {
+        // Handle both paginated and non-paginated responses
+        const subjectsData = response.data.results || response.data;
+        setSubjects(Array.isArray(subjectsData) ? subjectsData : []);
       }
     } catch (error) {
       console.error("Error fetching subjects:", error);

@@ -60,27 +60,28 @@ const SubjectDetail = () => {
 
       let selectedSubject = null;
 
-      if (
-        subjectResponse.data &&
-        subjectResponse.data.results &&
-        subjectResponse.data.results.length > 0
-      ) {
-        console.log("Found subjects:", subjectResponse.data.results);
-        console.log("First subject:", subjectResponse.data.results[0]);
-        // If multiple subjects found (common + branch-specific), prioritize branch-specific
-        if (userProfile?.branch) {
-          const branchSubject = subjectResponse.data.results.find(
-            (s) => s.branch === userProfile.branch
-          );
-          const commonSubject = subjectResponse.data.results.find(
-            (s) => s.is_common
-          );
-          selectedSubject =
-            branchSubject || commonSubject || subjectResponse.data.results[0];
+      if (subjectResponse.data) {
+        // Handle both paginated and non-paginated responses
+        const subjectsData =
+          subjectResponse.data.results || subjectResponse.data;
+
+        if (Array.isArray(subjectsData) && subjectsData.length > 0) {
+          console.log("Found subjects:", subjectsData);
+          console.log("First subject:", subjectsData[0]);
+          // If multiple subjects found (common + branch-specific), prioritize branch-specific
+          if (userProfile?.branch) {
+            const branchSubject = subjectsData.find(
+              (s) => s.branch === userProfile.branch
+            );
+            const commonSubject = subjectsData.find((s) => s.is_common);
+            selectedSubject = branchSubject || commonSubject || subjectsData[0];
+          } else {
+            selectedSubject = subjectsData[0];
+          }
+          console.log("Selected subject:", selectedSubject);
         } else {
-          selectedSubject = subjectResponse.data.results[0];
+          console.log("No subjects found in response");
         }
-        console.log("Selected subject:", selectedSubject);
       } else {
         console.log("No subjects found in response");
         console.log("subjectResponse.data:", subjectResponse.data);
@@ -112,8 +113,10 @@ const SubjectDetail = () => {
           const postsResponse = await apiService.getPosts({
             subject: selectedSubject.id,
           });
-          if (postsResponse.data && postsResponse.data.results) {
-            setPosts(postsResponse.data.results);
+          if (postsResponse.data) {
+            // Handle both paginated and non-paginated responses
+            const postsData = postsResponse.data.results || postsResponse.data;
+            setPosts(Array.isArray(postsData) ? postsData : []);
           }
         } catch (error) {
           console.log("No posts found for this subject:", error);

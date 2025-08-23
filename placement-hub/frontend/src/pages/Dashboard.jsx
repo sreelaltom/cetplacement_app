@@ -164,9 +164,26 @@ const Dashboard = () => {
     const response = await safeApiCall(() => apiService.getBranches());
 
     console.log("Branches response:", response);
-    if (response?.data?.results) {
-      console.log("Setting branches:", response.data.results);
-      setBranches(response.data.results.map((branch) => branch.name));
+    if (response?.data) {
+      // Handle both paginated (response.data.results) and non-paginated (response.data) formats
+      const branchesData = response.data.results || response.data;
+      if (Array.isArray(branchesData)) {
+        console.log("Setting branches:", branchesData);
+        setBranches(branchesData.map((branch) => branch.name));
+      } else {
+        console.log(
+          "Failed to load branches, invalid data format, using fallback"
+        );
+        // Fallback to hardcoded branches if API fails
+        setBranches([
+          "Computer Science Engineering",
+          "Electronics and Communication Engineering",
+          "Electrical and Electronics Engineering",
+          "Mechanical Engineering",
+          "Civil Engineering",
+          "Architecture",
+        ]);
+      }
     } else {
       console.log("Failed to load branches, using fallback");
       // Fallback to hardcoded branches if API fails
@@ -235,9 +252,19 @@ const Dashboard = () => {
     );
 
     console.log("Companies response:", response);
-    if (response?.data?.results) {
-      console.log("Setting companies:", response.data.results);
-      setCompanies(response.data.results);
+    if (response?.data) {
+      // Handle both paginated (response.data.results) and non-paginated (response.data) formats
+      const companiesData = response.data.results || response.data;
+      if (Array.isArray(companiesData)) {
+        console.log("Setting companies:", companiesData);
+        setCompanies(companiesData);
+      } else {
+        console.log("Failed to load companies, invalid data format:", response);
+        setErrors((prev) => ({
+          ...prev,
+          companies: "Failed to load companies",
+        }));
+      }
     } else {
       console.log("Failed to load companies, response:", response);
       setErrors((prev) => ({ ...prev, companies: "Failed to load companies" }));
@@ -256,9 +283,19 @@ const Dashboard = () => {
     );
 
     console.log("Posts response:", response);
-    if (response?.data?.results) {
-      console.log("Setting posts:", response.data.results);
-      setRecentPosts(response.data.results);
+    if (response?.data) {
+      // Handle both paginated (response.data.results) and non-paginated (response.data) formats
+      const postsData = response.data.results || response.data;
+      if (Array.isArray(postsData)) {
+        console.log("Setting posts:", postsData);
+        setRecentPosts(postsData);
+      } else {
+        console.log("Failed to load posts, invalid data format:", response);
+        setErrors((prev) => ({
+          ...prev,
+          posts: "Failed to load recent posts",
+        }));
+      }
     } else {
       console.log("Failed to load posts, response:", response);
       setErrors((prev) => ({ ...prev, posts: "Failed to load recent posts" }));

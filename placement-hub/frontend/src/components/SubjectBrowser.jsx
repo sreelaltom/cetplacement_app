@@ -32,8 +32,14 @@ const SubjectBrowser = () => {
   const fetchBranches = async () => {
     try {
       const { data, error } = await apiService.getBranches();
-      if (data && data.results) {
-        setBranches(data.results.map((branch) => branch.name));
+      if (data) {
+        // Handle both paginated and non-paginated responses
+        const branchesData = data.results || data;
+        if (Array.isArray(branchesData)) {
+          setBranches(branchesData.map((branch) => branch.name));
+        } else {
+          throw new Error("Invalid branches data format");
+        }
       } else if (error) {
         console.error("Error fetching branches:", error);
         // Fallback to hardcoded branches if API fails
@@ -64,8 +70,10 @@ const SubjectBrowser = () => {
     setLoading(true);
     try {
       const { data, error } = await apiService.getSubjects({ is_common: true });
-      if (data && data.results) {
-        setCommonSubjects(data.results);
+      if (data) {
+        // Handle both paginated and non-paginated responses
+        const subjectsData = data.results || data;
+        setCommonSubjects(Array.isArray(subjectsData) ? subjectsData : []);
       }
     } catch (error) {
       setError("Failed to load common subjects");
@@ -81,8 +89,10 @@ const SubjectBrowser = () => {
       const { data, error } = await apiService.getSubjects({
         branch: branchName,
       });
-      if (data && data.results) {
-        setBranchSubjects(data.results);
+      if (data) {
+        // Handle both paginated and non-paginated responses
+        const subjectsData = data.results || data;
+        setBranchSubjects(Array.isArray(subjectsData) ? subjectsData : []);
       }
     } catch (error) {
       setError("Failed to load branch subjects");

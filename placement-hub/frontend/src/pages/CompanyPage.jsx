@@ -44,8 +44,11 @@ const CompanyPage = () => {
 
       // Fetch company experiences
       const experiencesResponse = await apiService.getCompanyExperiences(id);
-      if (experiencesResponse.data && experiencesResponse.data.results) {
-        setExperiences(experiencesResponse.data.results);
+      if (experiencesResponse.data) {
+        // Handle both paginated and non-paginated responses
+        const experiencesData =
+          experiencesResponse.data.results || experiencesResponse.data;
+        setExperiences(Array.isArray(experiencesData) ? experiencesData : []);
       }
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -83,8 +86,11 @@ const CompanyPage = () => {
       await apiService.voteOnExperience(experienceId, isUpvote);
       // Refresh experiences to show updated vote counts
       const experiencesResponse = await apiService.getCompanyExperiences(id);
-      if (experiencesResponse.data && experiencesResponse.data.results) {
-        setExperiences(experiencesResponse.data.results);
+      if (experiencesResponse.data) {
+        // Handle both paginated and non-paginated responses
+        const experiencesData =
+          experiencesResponse.data.results || experiencesResponse.data;
+        setExperiences(Array.isArray(experiencesData) ? experiencesData : []);
       }
     } catch (error) {
       console.error("Error voting on experience:", error);

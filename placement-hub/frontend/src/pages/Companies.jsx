@@ -53,8 +53,10 @@ const Companies = () => {
     setLoading(true);
     try {
       const response = await apiService.getCompanies();
-      if (response.data && response.data.results) {
-        setCompanies(response.data.results);
+      if (response.data) {
+        // Handle both paginated and non-paginated responses
+        const companiesData = response.data.results || response.data;
+        setCompanies(Array.isArray(companiesData) ? companiesData : []);
       }
     } catch (error) {
       console.error("Error fetching companies:", error);
@@ -66,8 +68,12 @@ const Companies = () => {
   const fetchInterviewExperiences = async () => {
     try {
       const response = await apiService.getInterviewExperiences();
-      if (response.data && response.data.results) {
-        setInterviewExperiences(response.data.results);
+      if (response.data) {
+        // Handle both paginated and non-paginated responses
+        const experiencesData = response.data.results || response.data;
+        setInterviewExperiences(
+          Array.isArray(experiencesData) ? experiencesData : []
+        );
       }
     } catch (error) {
       console.error("Error fetching interview experiences:", error);

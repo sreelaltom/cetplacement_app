@@ -15,6 +15,7 @@ from django.utils import timezone
 from datetime import date
 from django.db import connection
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 
 from .models import (
     Branch, UserProfile, Subject, Post, PostVote, Company,
@@ -32,7 +33,9 @@ class IsSupabaseAuthenticated(BasePermission):
     Custom permission to check if user is authenticated via Supabase
     """
     def has_permission(self, request, view):
-        return hasattr(request, 'user') and request.user is not None
+        return (hasattr(request, 'user') and 
+                request.user is not None and 
+                not isinstance(request.user, AnonymousUser))
 
 
 @api_view(['GET'])
