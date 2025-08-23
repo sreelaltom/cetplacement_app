@@ -6,33 +6,80 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from django.conf import settings
+from django.utils import timezone
 import sys
+import os
 import traceback
 
-# Health check endpoint (no DB)
-def simple_health_check(request):
+
+# -------------------------
+# Simple View Functions
+# -------------------------
+
+def root_view(request):
+    """Root endpoint providing API information"""
     return JsonResponse({
-        "status": "ok",
-        "message": "Django is running",
-        "debug": settings.DEBUG,
-        "python_version": sys.version,
+        "message": "CET Placement Hub API",
+        "version": "1.0",
+        "status": "active",
+        "endpoints": {
+            "health": "/simple-health/",
+            "api": "/api/",
+            "admin": "/admin/",
+            "companies": "/api/companies/",
+            "users": "/api/users/",
+            "subjects": "/api/subjects/",
+            "posts": "/api/posts/",
+            "interviews": "/api/interviews/",
+        },
+        "documentation": "Visit /api/ for browsable API"
     })
 
 
-# Vercel deployment test
-def vercel_test(request):
+def simple_health_check(request):
+    """Simple health check endpoint"""
     try:
-        import os
+        from django.db import connection
+        from api.models import UserProfile, Company
+        
+        # Test database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        
         return JsonResponse({
-            "status": "success",
-            "message": "Django app is running on Vercel",
-            "python_version": sys.version,
-            "django_settings": os.environ.get("DJANGO_SETTINGS_MODULE", "Not set"),
-            "environment": "production" if not settings.DEBUG else "development",
+            "status": "healthy",
+            "database": "connected",
+            "users": UserProfile.objects.count(),
+            "companies": Company.objects.count(),
+            "timestamp": str(timezone.now()) if 'timezone' in globals() else "N/A"
         })
     except Exception as e:
         return JsonResponse({
             "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+        }, status=500)
+
+
+def vercel_test(request):
+    """Vercel deployment test endpoint"""
+    try:
+        return JsonResponse({
+            "success": True,
+            "message": "Vercel deployment is working!",
+            "python_version": sys.version,
+            "django_settings": {
+                "debug": settings.DEBUG,
+                "allowed_hosts": settings.ALLOWED_HOSTS,
+            },
+            "environment": {
+                "has_database_url": bool(os.environ.get("DATABASE_URL")),
+                "has_supabase_url": bool(os.environ.get("SUPABASE_URL")),
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
             "error": str(e),
             "traceback": traceback.format_exc(),
         }, status=500)
@@ -70,6 +117,7 @@ def simple_companies_bypass(request):
 # URL patterns
 # -------------------------
 urlpatterns = [
+    path("", root_view, name="root"),  # Root endpoint
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),   # your DRF routes
     path("simple-health/", simple_health_check, name="simple_health"),
