@@ -256,7 +256,7 @@ const Login = () => {
                       : "none",
                 }}
               >
-                Sign Up
+                Create Account
               </button>
               <button
                 onClick={() => setMode("magic")}
