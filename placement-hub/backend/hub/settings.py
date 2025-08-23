@@ -77,21 +77,22 @@ WSGI_APPLICATION = "hub.wsgi.application"
 # Database configuration
 import dj_database_url
 
-# Use DATABASE_URL if available (for Supabase/production), otherwise use PostgreSQL defaults
+# Always use DATABASE_URL if available (for Supabase/production)
 if os.environ.get("DATABASE_URL"):
     DATABASES = {
         "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     }
 else:
-    # Default PostgreSQL configuration (no SQLite fallback)
+    # Production PostgreSQL configuration using individual environment variables
+    # This ensures we never accidentally connect to localhost in production
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("DB_NAME", "placement_db"),
-            "USER": os.environ.get("DB_USER", "postgres"),
-            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-            "HOST": os.environ.get("DB_HOST", "localhost"),
-            "PORT": os.environ.get("DB_PORT", "5432"),
+            "NAME": os.environ.get("SUPABASE_DB_NAME", os.environ.get("DB_NAME", "postgres")),
+            "USER": os.environ.get("SUPABASE_DB_USER", os.environ.get("DB_USER", "postgres.byoqkhieazizoesflvms")),
+            "PASSWORD": os.environ.get("SUPABASE_DB_PASSWORD", os.environ.get("DB_PASSWORD", "Sreelaltom@123")),
+            "HOST": os.environ.get("SUPABASE_DB_HOST", os.environ.get("DB_HOST", "aws-1-us-east-2.pooler.supabase.com")),
+            "PORT": os.environ.get("SUPABASE_DB_PORT", os.environ.get("DB_PORT", "6543")),
         }
     }
 

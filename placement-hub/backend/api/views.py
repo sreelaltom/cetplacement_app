@@ -86,14 +86,22 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         lookup_value = kwargs.get(self.lookup_url_kwarg or self.lookup_field)
 
         try:
-            user_profile, created = UserProfile.objects.get_or_create(
-                supabase_uid=lookup_value,
-                defaults={
-                    "full_name": request.data.get("full_name", "New User"),
-                    "email": request.data.get("email", f"user-{lookup_value}@example.com"),
-                    "year": request.data.get("year", 1),  # default to 1st Year
-                }
-            )
+            # First try to get existing user profile
+            try:
+                user_profile = UserProfile.objects.get(supabase_uid=lookup_value)
+                created = False
+            except UserProfile.DoesNotExist:
+                # If user doesn't exist, create with minimal defaults
+                # Note: GET requests don't have data, so we create with basic defaults
+                user_profile = UserProfile.objects.create(
+                    supabase_uid=lookup_value,
+                    email=f"user-{lookup_value}@cet.ac.in",  # Default email format
+                    full_name="New User",  # Will be updated later
+                    year=1,  # Default to 1st year
+                    branch="",  # Empty branch initially
+                )
+                created = True
+
             serializer = self.get_serializer(user_profile)
             return Response({
                 **serializer.data,
