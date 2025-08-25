@@ -287,16 +287,105 @@ const SubjectBrowser = () => {
         background:
           "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)",
         padding: "2rem",
+        boxSizing: "border-box",
+        width: "100%",
+        overflowX: "hidden",
       }}
     >
+      {/* Responsive styles */}
+      <style>{`
+        body {
+          overflow-x: hidden !important;
+        }
+        .subject-browser-root,
+        .subject-browser-grid,
+        .subject-browser-no-branch {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+        .subject-browser-card {
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        @media (max-width: 900px) {
+          .subject-browser-header h1 {
+            font-size: 2.2rem !important;
+          }
+          .subject-browser-header p {
+            font-size: 1.05rem !important;
+          }
+          .subject-browser-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+        @media (max-width: 700px) {
+          .subject-browser-header h1 {
+            font-size: 1.7rem !important;
+          }
+          .subject-browser-header p {
+            font-size: 0.95rem !important;
+          }
+          .subject-browser-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+          }
+        }
+        @media (max-width: 500px) {
+          .subject-browser-root {
+            padding: 0.25rem !important;
+          }
+          .subject-browser-header h1 {
+            font-size: 1.2rem !important;
+          }
+          .subject-browser-header p {
+            font-size: 0.85rem !important;
+          }
+          .subject-browser-select {
+            min-width: 80px !important;
+            width: 100% !important;
+            font-size: 0.85rem !important;
+            padding: 0.4rem 0.7rem !important;
+            box-sizing: border-box !important;
+          }
+          .subject-browser-card {
+            padding: 0.7rem !important;
+          }
+          .subject-browser-no-branch {
+            padding: 1rem !important;
+            font-size: 0.9rem !important;
+          }
+        }
+        @media (max-width: 400px) {
+          .subject-browser-header h1 {
+            font-size: 1rem !important;
+          }
+          .subject-browser-header p {
+            font-size: 0.7rem !important;
+          }
+          .subject-browser-select {
+            font-size: 0.7rem !important;
+            padding: 0.2rem 0.4rem !important;
+          }
+          .subject-browser-card {
+            padding: 0.4rem !important;
+          }
+        }
+      `}</style>
       <div
+        className="subject-browser-root"
         style={{
-          maxWidth: "1200px",
           margin: "0 auto",
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
         {/* Header */}
         <div
+          className="subject-browser-header"
           style={{
             textAlign: "center",
             marginBottom: "3rem",
@@ -331,6 +420,7 @@ const SubjectBrowser = () => {
             }}
           >
             <select
+              className="subject-browser-select"
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
               style={{
@@ -342,6 +432,9 @@ const SubjectBrowser = () => {
                 fontSize: "1rem",
                 minWidth: "300px",
                 outline: "none",
+                width: "100%",
+                boxSizing: "border-box",
+                maxWidth: "100vw",
               }}
             >
               <option value="">Select Branch</option>
@@ -377,6 +470,8 @@ const SubjectBrowser = () => {
               alignItems: "center",
               gap: "1rem",
               marginBottom: "2rem",
+              flexWrap: "wrap",
+              justifyContent: "center",
             }}
           >
             <h2
@@ -404,10 +499,15 @@ const SubjectBrowser = () => {
           </div>
 
           <div
+            className="subject-browser-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
               gap: "1.5rem",
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+              overflowX: "hidden",
             }}
           >
             {commonSubjects.map((subject, index) => (
@@ -425,6 +525,8 @@ const SubjectBrowser = () => {
                 alignItems: "center",
                 gap: "1rem",
                 marginBottom: "2rem",
+                flexWrap: "wrap",
+                justifyContent: "center",
               }}
             >
               <h2
@@ -452,10 +554,15 @@ const SubjectBrowser = () => {
             </div>
 
             <div
+              className="subject-browser-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
                 gap: "1.5rem",
+                width: "100%",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                overflowX: "hidden",
               }}
             >
               {branchSubjects.map((subject, index) => (
@@ -468,12 +575,16 @@ const SubjectBrowser = () => {
         {/* No branch selected message */}
         {!selectedBranch && (
           <div
+            className="subject-browser-no-branch"
             style={{
               textAlign: "center",
               backgroundColor: "#2a2a2a",
               borderRadius: "1rem",
               padding: "3rem",
               border: "1px solid #404040",
+              boxSizing: "border-box",
+              width: "100%",
+              maxWidth: "100vw",
             }}
           >
             <div

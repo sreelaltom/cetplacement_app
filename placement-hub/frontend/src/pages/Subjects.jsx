@@ -128,9 +128,29 @@ const Subjects = () => {
         minHeight: "100vh",
         padding: "2rem",
         backgroundColor: "#f8fafc",
+        boxSizing: "border-box",
       }}
     >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .subjects-main-container {
+            padding: 0.5rem !important;
+            max-width: 100vw !important;
+          }
+          .subjects-filters {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+          .subjects-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+          }
+        }
+      `}</style>
+      <div
+        className="subjects-main-container"
+        style={{ maxWidth: "1200px", margin: "0 auto" }}
+      >
         {/* Header */}
         <div style={{ marginBottom: "2rem" }}>
           <h1
@@ -150,6 +170,7 @@ const Subjects = () => {
 
         {/* Filters */}
         <div
+          className="subjects-filters"
           style={{
             marginBottom: "2rem",
             display: "flex",
@@ -215,6 +236,7 @@ const Subjects = () => {
           </div>
         ) : (
           <div
+            className="subjects-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",

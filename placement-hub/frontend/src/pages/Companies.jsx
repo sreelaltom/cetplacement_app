@@ -201,9 +201,74 @@ const Companies = () => {
         minHeight: "100vh",
         padding: theme.spacing.lg,
         backgroundColor: theme.colors.background,
+        width: "100%",
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      {/* Responsive styles */}
+      <style>{`
+        body { overflow-x: hidden !important; }
+        .companies-root, .companies-grid, .experience-grid {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+        .experience-card {
+          word-break: break-word !important;
+          overflow-wrap: break-word !important;
+        }
+        .experience-card p {
+          word-break: break-word !important;
+          overflow-wrap: break-word !important;
+        }
+        @media (max-width: 900px) {
+          .companies-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .experience-card {
+            padding: 1rem !important;
+            font-size: 1rem !important;
+          }
+        }
+        @media (max-width: 700px) {
+          .companies-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+          }
+          .experience-grid {
+            gap: 1rem !important;
+          }
+          .experience-card {
+            padding: 0.7rem !important;
+            font-size: 0.95rem !important;
+          }
+        }
+        @media (max-width: 500px) {
+          .companies-root {
+            padding: 0.5rem !important;
+          }
+          .companies-grid, .experience-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0.5rem !important;
+          }
+          .experience-card {
+            padding: 0.5rem !important;
+            font-size: 0.9rem !important;
+          }
+        }
+      `}</style>
+      <div
+        className="companies-root"
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          width: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
+        }}
+      >
         {/* Header */}
         <div style={{ marginBottom: theme.spacing.xl }}>
           <h1
@@ -774,10 +839,15 @@ const Companies = () => {
             </div>
           ) : (
             <div
+              className="companies-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
                 gap: theme.spacing.xl,
+                width: "100%",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                overflowX: "hidden",
               }}
             >
               {filteredCompanies.map((company) => (
@@ -929,15 +999,31 @@ const Companies = () => {
             </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: theme.spacing.xl }}>
+          <div
+            className="experience-grid"
+            style={{
+              display: "grid",
+              gap: theme.spacing.xl,
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+              overflowX: "hidden",
+            }}
+          >
             {interviewExperiences.map((experience) => (
               <div
                 key={experience.id}
+                className="experience-card"
                 style={{
                   backgroundColor: theme.colors.surface,
                   borderRadius: theme.borderRadius.lg,
                   padding: theme.spacing.xl,
                   border: `1px solid ${theme.colors.border}`,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                  boxSizing: "border-box",
+                  width: "100%",
+                  maxWidth: "100%",
                 }}
               >
                 {/* Header */}

@@ -348,9 +348,30 @@ const Profile = () => {
         backgroundColor: theme.colors.background,
         minHeight: "100vh",
         padding: theme.spacing.md,
+        boxSizing: "border-box",
       }}
     >
+      <style>{`
+        @media (max-width: 600px) {
+          .profile-main-container {
+            padding: 0.5rem !important;
+            max-width: 100vw !important;
+          }
+          .profile-header-card {
+            padding: 1rem !important;
+            border-radius: 1rem !important;
+          }
+          .profile-tabs {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+          .profile-experiences-list {
+            gap: 1rem !important;
+          }
+        }
+      `}</style>
       <div
+        className="profile-main-container"
         style={{
           maxWidth: "900px",
           margin: "0 auto",
@@ -359,6 +380,7 @@ const Profile = () => {
       >
         {/* Profile Header Card */}
         <div
+          className="profile-header-card"
           style={{
             backgroundColor: theme.colors.surface,
             borderRadius: theme.borderRadius.xl,
@@ -426,6 +448,7 @@ const Profile = () => {
 
         {/* Tab Navigation */}
         <div
+          className="profile-tabs"
           style={{
             backgroundColor: theme.colors.surface,
             borderRadius: theme.borderRadius.xl,
@@ -435,6 +458,7 @@ const Profile = () => {
             padding: theme.spacing.sm,
             display: "flex",
             gap: theme.spacing.sm,
+            flexWrap: "wrap",
           }}
         >
           <button
@@ -603,6 +627,7 @@ const Profile = () => {
                 </div>
               ) : (
                 <div
+                  className="profile-experiences-list"
                   style={{
                     display: "flex",
                     flexDirection: "column",
