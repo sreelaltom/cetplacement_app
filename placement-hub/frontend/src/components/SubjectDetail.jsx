@@ -314,17 +314,105 @@ const SubjectDetail = () => {
 
   return (
     <div
+      className="subject-detail-main"
       style={{
         minHeight: "100vh",
         background:
           "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)",
-        padding: "2rem",
+        padding: "2rem 0",
+        width: "100%",
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
+      <style>{`
+        body { overflow-x: hidden !important; }
+        .subject-detail-main, .subject-detail-content, .subject-detail-header, .subject-detail-sort-controls, .subject-detail-create-post-form {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+        @media (max-width: 900px) {
+          .subject-detail-content {
+            max-width: 100% !important;
+            padding: 1rem !important;
+          }
+        }
+        @media (max-width: 700px) {
+          .subject-detail-main {
+            padding: 1rem 0 !important;
+          }
+          .subject-detail-content {
+            padding: 0.5rem !important;
+          }
+          .subject-detail-header-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.5rem !important;
+          }
+          .subject-detail-new-post-btn-wrapper {
+            justify-content: center !important;
+            margin-top: 1rem !important;
+          }
+          .subject-detail-new-post-btn {
+            width: 100% !important;
+            max-width: 100% !important;
+            font-size: 1.1rem !important;
+          }
+          .subject-detail-sort-controls {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            padding: 1rem !important;
+          }
+          .subject-detail-sort-buttons {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            width: 100% !important;
+            gap: 0.5rem !important;
+          }
+          .subject-detail-sort-buttons button {
+            width: 100% !important;
+            min-width: 100px !important;
+            font-size: 1rem !important;
+          }
+        }
+        @media (max-width: 500px) {
+          .subject-detail-main {
+            padding: 0.5rem 0 !important;
+          }
+          .subject-detail-content {
+            padding: 0.25rem !important;
+          }
+          .subject-detail-header-row {
+            gap: 0.25rem !important;
+          }
+          .subject-detail-new-post-btn {
+            font-size: 1rem !important;
+            padding: 0.6rem 1rem !important;
+          }
+          .subject-detail-sort-controls {
+            padding: 0.5rem !important;
+          }
+          .subject-detail-sort-buttons button {
+            font-size: 0.95rem !important;
+            min-width: 80px !important;
+          }
+        }
+        @media (max-width: 400px) {
+          .subject-detail-content {
+            padding: 0 !important;
+          }
+        }
+      `}</style>
       <div
+        className="subject-detail-content"
         style={{
           maxWidth: "1000px",
           margin: "0 auto",
+          width: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
         {/* Header */}
