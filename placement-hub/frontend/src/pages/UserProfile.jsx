@@ -232,8 +232,6 @@ const UserProfile = () => {
                 <span>📚 {targetUserProfile.branch}</span>
                 <span>•</span>
                 <span>🎓 {getYearDisplay(targetUserProfile.year)}</span>
-                <span>•</span>
-                <span>⭐ {targetUserProfile.points || 0} points</span>
               </div>
             </div>
           </div>
@@ -276,6 +274,7 @@ const UserProfile = () => {
                 padding: theme.spacing.md,
                 backgroundColor: theme.colors.background,
                 borderRadius: theme.borderRadius.md,
+                marginBottom: theme.spacing.md,
               }}
             >
               <h3
@@ -298,6 +297,61 @@ const UserProfile = () => {
               >
                 {targetUserProfile.skills}
               </p>
+            </div>
+          )}
+
+          {(targetUserProfile.linkedin_url || targetUserProfile.github_url) && (
+            <div
+              style={{
+                padding: theme.spacing.md,
+                backgroundColor: theme.colors.background,
+                borderRadius: theme.borderRadius.md,
+                marginBottom: theme.spacing.md,
+                display: "flex",
+                gap: theme.spacing.lg,
+                alignItems: "center",
+              }}
+            >
+              {targetUserProfile.linkedin_url && (
+                <a
+                  href={targetUserProfile.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#0A66C2",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <span role="img" aria-label="LinkedIn">
+                    🔗
+                  </span>{" "}
+                  LinkedIn
+                </a>
+              )}
+              {targetUserProfile.github_url && (
+                <a
+                  href={targetUserProfile.github_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#333",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <span role="img" aria-label="GitHub">
+                    🐙
+                  </span>{" "}
+                  GitHub
+                </a>
+              )}
             </div>
           )}
         </div>
