@@ -109,16 +109,29 @@ const Profile = () => {
     }
   };
 
-  const branches = [
-    "Computer Science Engineering",
-    "Information Technology",
-    "Electronics and Communication",
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-    "Other",
-  ];
+  const [branches, setBranches] = useState([]);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      setBranchesLoading(true);
+      try {
+        const response = await apiService.getBranches();
+        if (response.data && Array.isArray(response.data)) {
+          setBranches(response.data.map((branch) => branch.name));
+        } else if (response.data && response.data.results) {
+          setBranches(response.data.results.map((branch) => branch.name));
+        } else {
+          setBranches([]);
+        }
+      } catch (error) {
+        setBranches([]);
+      } finally {
+        setBranchesLoading(false);
+      }
+    };
+    fetchBranches();
+  }, []);
 
   const fetchUserPosts = async () => {
     if (!userProfile?.supabase_uid) {
@@ -1012,11 +1025,17 @@ const Profile = () => {
                     }}
                   >
                     <option value="">Select Branch</option>
-                    {branches.map((branch) => (
-                      <option key={branch} value={branch}>
-                        {branch}
-                      </option>
-                    ))}
+                    {branchesLoading ? (
+                      <option disabled>Loading branches...</option>
+                    ) : branches.length === 0 ? (
+                      <option disabled>No branches found</option>
+                    ) : (
+                      branches.map((branch) => (
+                        <option key={branch} value={branch}>
+                          {branch}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
 

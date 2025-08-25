@@ -37,37 +37,38 @@ const ProfileSetup = () => {
 
   const fetchBranches = async () => {
     try {
-      setBranchesLoading(true);
       const { data, error } = await apiService.getBranches();
       if (data) {
         // Handle both paginated and non-paginated responses
         const branchesData = data.results || data;
-        setBranches(Array.isArray(branchesData) ? branchesData : []);
+        if (Array.isArray(branchesData)) {
+          setBranches(branchesData.map((branch) => branch.name));
+        } else {
+          throw new Error("Invalid branches data format");
+        }
       } else if (error) {
         console.error("Error fetching branches:", error);
         // Fallback to hardcoded branches if API fails
         setBranches([
-          { id: 1, name: "Computer Science Engineering" },
-          { id: 2, name: "Electronics and Communication Engineering" },
-          { id: 3, name: "Electrical and Electronics Engineering" },
-          { id: 4, name: "Mechanical Engineering" },
-          { id: 5, name: "Civil Engineering" },
-          { id: 6, name: "Architecture" },
+          "Computer Science Engineering",
+          "Electronics and Communication Engineering",
+          "Electrical and Electronics Engineering",
+          "Mechanical Engineering",
+          "Civil Engineering",
+          "Architecture",
         ]);
       }
     } catch (error) {
       console.error("Error fetching branches:", error);
       // Fallback to hardcoded branches if API fails
       setBranches([
-        { id: 1, name: "Computer Science Engineering" },
-        { id: 2, name: "Electronics and Communication Engineering" },
-        { id: 3, name: "Electrical and Electronics Engineering" },
-        { id: 4, name: "Mechanical Engineering" },
-        { id: 5, name: "Civil Engineering" },
-        { id: 6, name: "Architecture" },
+        "Computer Science Engineering",
+        "Electronics and Communication Engineering",
+        "Electrical and Electronics Engineering",
+        "Mechanical Engineering",
+        "Civil Engineering",
+        "Architecture",
       ]);
-    } finally {
-      setBranchesLoading(false);
     }
   };
 
@@ -424,12 +425,35 @@ const ProfileSetup = () => {
                   >
                     Branch *
                   </label>
+                  {branchesLoading && (
+                    <div
+                      style={{
+                        color: "#e0e0e0",
+                        marginBottom: "0.5rem",
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      Loading branches...
+                    </div>
+                  )}
+                  {!branchesLoading && branches.length === 0 && (
+                    <div
+                      style={{
+                        color: "red",
+                        marginBottom: "0.5rem",
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      Failed to load branches from the database. Please try
+                      again later.
+                    </div>
+                  )}
                   <select
                     name="branch"
                     value={formData.branch}
                     onChange={handleInputChange}
                     required
-                    disabled={branchesLoading}
+                    disabled={branchesLoading || branches.length === 0}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -444,11 +468,13 @@ const ProfileSetup = () => {
                     <option value="">
                       {branchesLoading
                         ? "Loading branches..."
+                        : branches.length === 0
+                        ? "No branches available"
                         : "Select your branch"}
                     </option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.name}>
-                        {branch.name}
+                    {branches.map((branch, idx) => (
+                      <option key={branch} value={branch}>
+                        {branch}
                       </option>
                     ))}
                   </select>
