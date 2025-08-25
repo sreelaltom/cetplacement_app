@@ -349,7 +349,7 @@ const SubjectDetail = () => {
           .subject-detail-header-row {
             flex-direction: column !important;
             align-items: stretch !important;
-            gap: 0.5rem !important;
+            gap: 1rem !important;
           }
           .subject-detail-new-post-btn-wrapper {
             justify-content: center !important;
@@ -359,6 +359,8 @@ const SubjectDetail = () => {
             width: 100% !important;
             max-width: 100% !important;
             font-size: 1.1rem !important;
+            margin-top: 1rem !important;
+            align-self: stretch !important;
           }
           .subject-detail-sort-controls {
             flex-direction: column !important;
@@ -385,11 +387,14 @@ const SubjectDetail = () => {
             padding: 0.25rem !important;
           }
           .subject-detail-header-row {
-            gap: 0.25rem !important;
+            gap: 0.5rem !important;
           }
           .subject-detail-new-post-btn {
             font-size: 1rem !important;
             padding: 0.6rem 1rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-top: 0.5rem !important;
           }
           .subject-detail-sort-controls {
             padding: 0.5rem !important;
@@ -431,6 +436,7 @@ const SubjectDetail = () => {
               justifyContent: "space-between",
               alignItems: "flex-start",
               marginBottom: "1rem",
+              flexWrap: "wrap",
             }}
           >
             <div>
@@ -496,6 +502,7 @@ const SubjectDetail = () => {
             </div>
 
             <button
+              className="subject-detail-new-post-btn"
               onClick={() => setShowCreateForm(!showCreateForm)}
               style={{
                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -506,6 +513,11 @@ const SubjectDetail = () => {
                 cursor: "pointer",
                 fontWeight: "600",
                 fontSize: "0.9rem",
+                marginLeft: "1rem",
+                marginTop: 0,
+                maxWidth: "200px",
+                width: "auto",
+                alignSelf: "flex-start",
               }}
             >
               + New Post
@@ -761,6 +773,7 @@ const SubjectDetail = () => {
 
         {/* Sort Controls */}
         <div
+          className="subject-detail-sort-controls"
           style={{
             backgroundColor: "#1e1e1e",
             borderRadius: "1rem",
@@ -770,6 +783,9 @@ const SubjectDetail = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            flexWrap: "wrap",
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <h3
@@ -782,7 +798,16 @@ const SubjectDetail = () => {
             Posts & Discussions
           </h3>
 
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div
+            className="subject-detail-sort-buttons"
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              flexWrap: "wrap",
+              width: "100%",
+              justifyContent: "flex-end",
+            }}
+          >
             {["votes", "recent", "oldest"].map((option) => (
               <button
                 key={option}
@@ -796,6 +821,8 @@ const SubjectDetail = () => {
                   cursor: "pointer",
                   fontSize: "0.85rem",
                   textTransform: "capitalize",
+                  marginBottom: "0.5rem",
+                  minWidth: "120px",
                 }}
               >
                 {option === "votes"
@@ -806,6 +833,35 @@ const SubjectDetail = () => {
               </button>
             ))}
           </div>
+          <style>{`
+            @media (max-width: 700px) {
+              .subject-detail-sort-controls {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 1rem !important;
+              }
+              .subject-detail-sort-buttons {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                width: 100% !important;
+                gap: 0.5rem !important;
+              }
+              .subject-detail-sort-buttons button {
+                width: 100% !important;
+                min-width: 100px !important;
+                font-size: 1rem !important;
+              }
+            }
+            @media (max-width: 500px) {
+              .subject-detail-sort-controls {
+                padding: 0.5rem !important;
+              }
+              .subject-detail-sort-buttons button {
+                font-size: 0.95rem !important;
+                min-width: 80px !important;
+              }
+            }
+          `}</style>
         </div>
 
         {/* Posts List */}
